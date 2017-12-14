@@ -89,6 +89,7 @@ func GetCoin(w http.ResponseWriter, r *http.Request) {
 		if err := json.NewDecoder(response.Body).Decode(&record); err != nil {
 			log.Println(err)
 		}
+		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(record)
 	}
 }
