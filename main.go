@@ -1,11 +1,11 @@
 package main
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-	"encoding/json"
-	"fmt"
 	"time"
 )
 
@@ -45,6 +45,7 @@ func main() {
 
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
+
 /*
 func GetPeople(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(people)
@@ -87,7 +88,7 @@ func GetCoin(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Printf("The HTTP request failed with error %s\n", err)
 	} else {
-		coin := Coin{QueryTimeStamp:time.Now().Unix()}
+		coin := Coin{QueryTimeStamp: time.Now().Unix()}
 		err := json.NewDecoder(response.Body).Decode(&coin)
 		if err != nil {
 			log.Println(err)
@@ -95,7 +96,7 @@ func GetCoin(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		fmt.Println(coin)
 		err = json.NewEncoder(w).Encode(coin)
-		if err != nil{
+		if err != nil {
 			log.Println(err)
 		}
 	}

@@ -3,25 +3,30 @@ package main
 import (
 	"encoding/json"
 	"math/big"
+	"time"
 )
 
 var apiUrl string = "https://api.gdax.com/"
 
-type gdaxCurrency struct {
-	id string `json:"id,omitempty"`
-	name string `json:"name,omitempty"`
-	min_size float32 `json:"min_size,omitempty"`
-	status string `json:"status,omitempty"`
-	message string `json"message,omitempty"`
+type GdaxCurrency struct {
+	Id      string  `json:"id,omitempty"`
+	Name    string  `json:"name,omitempty"`
+	MinSize float32 `json:"min_size,omitempty"`
+	Status  string  `json:"status,omitempty"`
+	Message string  `json:"message,omitempty"`
 }
 
-type gdaxProducts struct {
-	id string `json:"id,omitempty"`
-	status string `json:"status,omitempty"`
+type GdaxProducts struct {
+	Id     string `json:"id,omitempty"`
+	Status string `json:"status,omitempty"`
 }
 
-type gdaxStats struct {
-	last big.Float `json:"last,omitempty"`
-	timestamp string
+type GdaxStats struct {
+	Open           big.Float `json:"open"`
+	High           big.Float `json:"high"`
+	Low            big.Float `json:"low"`
+	Volume         big.Float `json:"volume"`
+	Last           big.Float `json:"last"`
+	Volume30Day    big.Float `json:"volume_30day"`
+	QueryTimeStamp int64     `json:"query_timestamp"`
 }
-
