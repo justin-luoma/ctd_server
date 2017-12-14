@@ -1,12 +1,15 @@
-package main
+package gdax
 
 import (
-	"encoding/json"
 	"math/big"
-	"time"
+	"net/http"
 )
 
 var apiUrl string = "https://api.gdax.com/"
+
+type GdaxCurrencyResponse struct {
+	Collection []GdaxCurrency
+}
 
 type GdaxCurrency struct {
 	Id      string  `json:"id,omitempty"`
@@ -29,4 +32,9 @@ type GdaxStats struct {
 	Last           big.Float `json:"last"`
 	Volume30Day    big.Float `json:"volume_30day"`
 	QueryTimeStamp int64     `json:"query_timestamp"`
+}
+
+func pull_currencies() {
+	currencies := make([]GdaxCurrency, 0)
+	response, err := http.Get("")
 }

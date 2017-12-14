@@ -3,8 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/mux"
 	"log"
+	"mux"
 	"net/http"
 	"time"
 )
@@ -94,7 +94,6 @@ func GetCoin(w http.ResponseWriter, r *http.Request) {
 			log.Println(err)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		fmt.Println(coin)
 		err = json.NewEncoder(w).Encode(coin)
 		if err != nil {
 			log.Println(err)
