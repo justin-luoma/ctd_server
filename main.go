@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"encoding/json"
 	"fmt"
+	"time"
 )
 
 /*type Person struct {
@@ -20,10 +21,11 @@ type Address struct {
 	State string `json:"state,omitempty"`
 }*/
 type Coin struct {
-	ID string `json:"id,omitempty"`
-	PRICE_BTC float32 `json:"price_btc,omitempty"`
-	PRICE_ETH float32 `json:"price_eth,omitempty"`
-	PRICE_USD float32 `json:"price_usd,omitempty"`
+	ID             string
+	PriceBTC       float32 `json:"price_btc"`
+	PriceETH       float32 `json:"price_eth"`
+	PriceUSD       float32 `json:"price_usd"`
+	QueryTimeStamp int64   `json:"query_timestamp"`
 }
 
 //var people []Person
@@ -85,11 +87,16 @@ func GetCoin(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Printf("The HTTP request failed with error %s\n", err)
 	} else {
-		var record Coin
-		if err := json.NewDecoder(response.Body).Decode(&record); err != nil {
+		coin := Coin{QueryTimeStamp:time.Now().Unix()}
+		err := json.NewDecoder(response.Body).Decode(&coin)
+		if err != nil {
 			log.Println(err)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(record)
+		fmt.Println(coin)
+		err = json.NewEncoder(w).Encode(coin)
+		if err != nil{
+			log.Println(err)
+		}
 	}
 }
