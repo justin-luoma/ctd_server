@@ -32,7 +32,7 @@ func GetCoinCapCoin(id string) *CoinCapPage {
 		if err != nil {
 			log.Println(err)
 		}
-		fmt.Println(coin)
+		//fmt.Println(coin)
 	}
 	return &coin
 }

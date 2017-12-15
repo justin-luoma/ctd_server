@@ -4,8 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"./coincap"
-	"mux"
-	"fmt"
+	"github.com/gorilla/mux"
 	"net/http"
 )
 
@@ -85,7 +84,6 @@ func GetCoin(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
 	coin := coincap.GetCoinCapCoin(params["id"])
-	fmt.Println(coin)
 	w.Header().Set("Content-Type", "application/json")
 	err := json.NewEncoder(w).Encode(coin)
 	if err != nil {
