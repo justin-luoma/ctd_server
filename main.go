@@ -2,11 +2,11 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
+	"./coincap"
 	"mux"
+	"fmt"
 	"net/http"
-	"time"
 )
 
 /*type Person struct {
@@ -21,10 +21,12 @@ type Address struct {
 	State string `json:"state,omitempty"`
 }*/
 type Coin struct {
-	ID             string
-	PriceBTC       float32 `json:"price_btc"`
-	PriceETH       float32 `json:"price_eth"`
-	PriceUSD       float32 `json:"price_usd"`
+	ID             string  `json:"id"`
+	DisplayName    string  `json:"display_name"`
+	Cap24HrChange  float64 `json:"cap24hrChange"`
+	PriceBtc       float64 `json:"price_btc"`
+	PriceEth       float64 `json:"price_eth"`
+	PriceUsd       float64 `json:"price_usd"`
 	QueryTimeStamp int64   `json:"query_timestamp"`
 }
 
@@ -82,6 +84,15 @@ func DeletePerson(w http.ResponseWriter, r *http.Request) {
 func GetCoin(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 
+	coin := coincap.GetCoinCapCoin(params["id"])
+	fmt.Println(coin)
+	w.Header().Set("Content-Type", "application/json")
+	err := json.NewEncoder(w).Encode(coin)
+	if err != nil {
+		log.Println(err)
+	}
+
+	/*
 	url := fmt.Sprintf("http://coincap.io/page/%s", params["id"])
 
 	response, err := http.Get(url)
@@ -98,5 +109,5 @@ func GetCoin(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Println(err)
 		}
-	}
+	}*/
 }
