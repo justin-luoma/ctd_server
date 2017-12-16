@@ -3,14 +3,15 @@ package coincap
 import (
 	"../restful_query"
 	"encoding/json"
-	"log"
-	"time"
+	"flag"
 	"github.com/golang/glog"
 	"github.com/jinzhu/copier"
-	"flag"
+	"log"
+	"time"
+	"../coin_struct"
 )
 
-func init()  {
+func init() {
 	flag.Parse()
 }
 
@@ -33,12 +34,12 @@ type CoinCapPage struct {
 }
 
 type Coin struct {
-	Id             string    `json:"id"`
-	DisplayName    string    `json:"display_name"`
+	Id             string  `json:"id"`
+	DisplayName    string  `json:"display_name"`
 	PriceBtc       float64 `json:"price_btc,omitempty"`
 	PriceEth       float64 `json:"price_eth,omitempty"`
 	PriceUsd       float64 `json:"price_usd,omitempty"`
-	QueryTimeStamp int64     `json:"query_timestamp"`
+	QueryTimeStamp int64   `json:"query_timestamp"`
 }
 
 func get_map() ([]CoinCapMap, error) {
@@ -64,9 +65,9 @@ func get_page(product string) CoinCapPage {
 	return page
 }
 
-func GetCoinCapCoin(id string) Coin {
+func GetCoinCapCoin(id string) coin_struct.Coin {
 	page := get_page(id)
-	coin := Coin{}
-	copier.Copy(&coin, &page)
-	return coin
+	coinCapCoin := coin_struct.Coin{}
+	copier.Copy(&coinCapCoin, &page)
+	return coinCapCoin
 }

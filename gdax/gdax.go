@@ -110,4 +110,6 @@ func get_stat() ([]GdaxStats, error) {
 	}
 }
 
-func get_coin_stats(id string)
+func Get_Coin_Stats(id string, *Coin) *Coin {
+
+}

@@ -6,9 +6,8 @@ import (
 	"./coincap"
 	"github.com/gorilla/mux"
 	"net/http"
-	"github.com/golang/glog"
-	"./restful_query"
 	"flag"
+	"./coin_struct"
 )
 
 func init()  {
@@ -26,7 +25,7 @@ type Address struct {
 	City  string `json:"city,omitempty"`
 	State string `json:"state,omitempty"`
 }*/
-type Coin struct {
+/*type Coin struct {
 	ID             string  `json:"id"`
 	DisplayName    string  `json:"display_name"`
 	Cap24HrChange  float64 `json:"cap24hrChange"`
@@ -34,14 +33,12 @@ type Coin struct {
 	PriceEth       float64 `json:"price_eth"`
 	PriceUsd       float64 `json:"price_usd"`
 	QueryTimeStamp int64   `json:"query_timestamp"`
-}
+}*/
 
 //var people []Person
 
 // our main function
 func main() {
-	glog.V(2).Infoln("Verbose logging on")
-	restful_query.Get("https://api.gdax.com/currencies")
 	/*people = append(people, Person{ID: "1", Firstname: "John", Lastname: "Doe", Address: &Address{City: "City X", State: "State X"}})
 	people = append(people, Person{ID: "2", Firstname: "Koko", Lastname: "Doe", Address: &Address{City: "City Z", State: "State Y"}})
 	people = append(people, Person{ID: "3", Firstname: "Francis", Lastname: "Sunday"})*/
@@ -91,8 +88,8 @@ func DeletePerson(w http.ResponseWriter, r *http.Request) {
 }*/
 func GetCoin(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-
-	coin := coincap.GetCoinCapCoin(params["id"])
+	coin := coin_struct.Coin{}
+	coin = coincap.GetCoinCapCoin(params["id"])
 	w.Header().Set("Content-Type", "application/json")
 	err := json.NewEncoder(w).Encode(coin)
 	if err != nil {
