@@ -4,9 +4,9 @@ import (
 	"../restful_query"
 	"encoding/json"
 	"log"
-	"math/big"
 	"time"
 	"github.com/golang/glog"
+	"github.com/jinzhu/copier"
 	"flag"
 )
 
@@ -27,7 +27,7 @@ type CoinCapPage struct {
 	DisplayName    string  `json:"display_name"`
 	Cap24HrChange  float64 `json:"cap24hrChange"`
 	PriceBtc       float64 `json:"price_btc"`
-	PriceEth       float64 `json:"price_eth"`
+	PriceEur       float64 `json:"price_eur"`
 	PriceUsd       float64 `json:"price_usd"`
 	QueryTimeStamp int64   `json:"query_timestamp"`
 }
@@ -35,9 +35,9 @@ type CoinCapPage struct {
 type Coin struct {
 	Id             string    `json:"id"`
 	DisplayName    string    `json:"display_name"`
-	PriceBtc       big.Float `json:"price_btc"`
-	PriceEth       big.Float `json:"price_eth"`
-	PriceUsd       big.Float `json:"price_usd"`
+	PriceBtc       float64 `json:"price_btc,omitempty"`
+	PriceEth       float64 `json:"price_eth,omitempty"`
+	PriceUsd       float64 `json:"price_usd,omitempty"`
 	QueryTimeStamp int64     `json:"query_timestamp"`
 }
 
@@ -64,8 +64,9 @@ func get_page(product string) CoinCapPage {
 	return page
 }
 
-func GetCoinCapCoin(id string) *CoinCapPage {
+func GetCoinCapCoin(id string) Coin {
 	page := get_page(id)
-
-	return &page
+	coin := Coin{}
+	copier.Copy(&coin, &page)
+	return coin
 }
