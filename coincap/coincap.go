@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"time"
 	"log"
-	"math/big"
 )
 
 var apiUrl string = "https://coincap.io"
@@ -14,10 +13,10 @@ var apiUrl string = "https://coincap.io"
 type CoinCapPage struct {
 	ID             string  `json:"id"`
 	DisplayName    string  `json:"display_name"`
-	Cap24HrChange  big.Float `json:"cap24hrChange"`
-	PriceBtc       big.Float `json:"price_btc"`
-	PriceEur       big.Float `json:"price_eur"`
-	PriceUsd       big.Float `json:"price_usd"`
+	Cap24HrChange  float64 `json:"cap24hrChange"`
+	PriceBtc       float64 `json:"price_btc"`
+	PriceEur       float64 `json:"price_eur"`
+	PriceUsd       float64 `json:"price_usd"`
 	QueryTimeStamp int64   `json:"query_timestamp"`
 }
 

@@ -6,7 +6,6 @@ import (
 	"./coincap"
 	"github.com/gorilla/mux"
 	"net/http"
-	"math/big"
 )
 
 /*type Person struct {
@@ -23,10 +22,10 @@ type Address struct {
 type Coin struct {
 	ID             string  `json:"id"`
 	DisplayName    string  `json:"display_name"`
-	Cap24HrChange  big.Float `json:"cap24hrChange"`
-	PriceBtc       big.Float `json:"price_btc"`
-	PriceEth       big.Float `json:"price_eth"`
-	PriceUsd       big.Float `json:"price_usd"`
+	Cap24HrChange  float64 `json:"cap24hrChange"`
+	PriceBtc       float64 `json:"price_btc"`
+	PriceEth       float64 `json:"price_eth"`
+	PriceUsd       float64 `json:"price_usd"`
 	QueryTimeStamp int64   `json:"query_timestamp"`
 }
 
