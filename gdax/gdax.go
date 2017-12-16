@@ -3,14 +3,15 @@ package gdax
 import (
 	"../restful_query"
 	"encoding/json"
+	"errors"
+	"flag"
+	"github.com/golang/glog"
 	"log"
 	"math/big"
 	"time"
-	"github.com/golang/glog"
-	"flag"
 )
 
-func init()  {
+func init() {
 	flag.Parse()
 }
 
@@ -31,14 +32,14 @@ type GdaxProducts struct {
 }
 
 type GdaxStats struct {
-	Product        string    `json:"id"`
+	Product        string `json:"id"`
 	Open           string `json:"open"`
 	High           string `json:"high"`
 	Low            string `json:"low"`
 	Volume         string `json:"volume"`
 	Last           string `json:"last"`
 	Volume30Day    string `json:"volume_30day"`
-	QueryTimeStamp int64     `json:"query_timestamp"`
+	QueryTimeStamp int64  `json:"query_timestamp"`
 }
 
 type Coin struct {
@@ -50,45 +51,63 @@ type Coin struct {
 	QueryTimeStamp int64     `json:"query_timestamp"`
 }
 
-func get_currencies() (*[]GdaxCurrencies, error) {
+func get_currencies() ([]GdaxCurrencies, error) {
 	bodyBytes, err := restful_query.Get(apiUrl + "currencies")
 	if err != nil {
-		log.Fatalln(err)
+		glog.Errorln(err)
+		return nil, err
 	}
 	var currencies []GdaxCurrencies
 	json.Unmarshal(bodyBytes, &currencies)
 
-	return &currencies, nil
+	return currencies, nil
 }
 
 func get_products() ([]GdaxProducts, error) {
 	bodyBytes, err := restful_query.Get(apiUrl + "products")
 	if err != nil {
-		log.Fatalln(err)
+		glog.Errorln(err)
+		return nil, err
 	}
+
 	var products []GdaxProducts
 	json.Unmarshal(bodyBytes, &products)
 
 	return products, nil
 }
 
-func get_stat() /*(*[]GdaxStats, error)*/ {
-	glog.V(2).Infoln("Testing")
+func get_stat() ([]GdaxStats, error) {
 	products, err := get_products()
 	if err != nil {
-		log.Fatalln(err)
+		glog.Errorln(err)
+		return nil, err
 	}
+
 	var stats []GdaxStats
+	var productErr error = nil
+
 	for _, product := range products {
 		if product.Status == "online" {
 			bodyBytes, err := restful_query.Get(apiUrl + "products/" + product.Id + "/stats")
 			if err != nil {
-				log.Fatalln(err)
+				glog.Errorln(err)
+				return nil, err
 			}
 			stat := GdaxStats{Product: product.Id,
 				QueryTimeStamp: time.Now().Unix()}
 			json.Unmarshal(bodyBytes, &stat)
 			stats = append(stats, stat)
+		} else {
+			glog.Warningln("skipped GDAX product: " + product.Id + " status: " + product.Status)
+			productErr = errors.New("product: " + product.Id + " status: " + product.Status)
 		}
 	}
+
+	if productErr == nil {
+		return stats, nil
+	} else {
+		return stats, productErr
+	}
 }
+
+func get_coin_stats(id string)
