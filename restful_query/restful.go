@@ -4,6 +4,8 @@ import (
 	"github.com/valyala/fasthttp"
 	"log"
 	"errors"
+	"strconv"
+	"time"
 )
 
 func Get(url string) ([]byte, error) {
@@ -15,12 +17,23 @@ func Get(url string) ([]byte, error) {
 	client := &fasthttp.Client{}
 	err := client.Do(req, resp)
 	if err != nil {
+		log.Fatalln("Source: restful->Get->client")
 		log.Fatal(err)
+		return nil, err
 	}
 	if resp.Header.StatusCode() != 200 {
-		functionError := string(resp.Header.StatusCode()) + string(req.URI().FullURI())
-		return nil, errors.New(functionError)
+		if resp.Header.StatusCode() == 429 {
+			log.Fatalln("api limit exceeded, trying again")
+			time.Sleep(time.Second)
+			return Get(url)
+		} else {
+			log.Fatalln("url: " + url + "status code: " + strconv.Itoa(resp.Header.StatusCode()))
+			return nil, errors.New("url: " + string(req.URI().FullURI()) + " status: " + strconv.Itoa(resp.Header.StatusCode()))
+		}
+
 	}
+
+	log.Println("queried: " + string(req.URI().FullURI()))
 
 	fasthttp.ReleaseRequest(req)
 
