@@ -2,14 +2,12 @@ package gdax
 
 import (
 	"math/big"
-	"net/http"
+	"encoding/json"
+	"../restful_query"
+	"log"
 )
 
 var apiUrl string = "https://api.gdax.com/"
-
-type GdaxCurrencyResponse struct {
-	Collection []GdaxCurrency
-}
 
 type GdaxCurrency struct {
 	Id      string  `json:"id,omitempty"`
@@ -34,7 +32,13 @@ type GdaxStats struct {
 	QueryTimeStamp int64     `json:"query_timestamp"`
 }
 
-func pull_currencies() {
-	currencies := make([]GdaxCurrency, 0)
-	response, err := http.Get("")
+func pull_currencies() (*[]GdaxCurrency, error) {
+	bodyBytes, err := restful_query.Get(apiUrl+"currencies")
+	if err != nil {
+		log.Fatalln(err)
+	}
+	var currencies []GdaxCurrency
+	json.Unmarshal(bodyBytes, &currencies)
+
+	return &currencies, nil
 }
