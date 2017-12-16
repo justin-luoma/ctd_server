@@ -6,7 +6,14 @@ import (
 	"./coincap"
 	"github.com/gorilla/mux"
 	"net/http"
+	"github.com/golang/glog"
+	"./restful_query"
+	"flag"
 )
+
+func init()  {
+	flag.Parse()
+}
 
 /*type Person struct {
 	ID        string   `json:"id,omitempty"`
@@ -33,6 +40,8 @@ type Coin struct {
 
 // our main function
 func main() {
+	glog.V(2).Infoln("Verbose logging on")
+	restful_query.Get("https://api.gdax.com/currencies")
 	/*people = append(people, Person{ID: "1", Firstname: "John", Lastname: "Doe", Address: &Address{City: "City X", State: "State X"}})
 	people = append(people, Person{ID: "2", Firstname: "Koko", Lastname: "Doe", Address: &Address{City: "City Z", State: "State Y"}})
 	people = append(people, Person{ID: "3", Firstname: "Francis", Lastname: "Sunday"})*/

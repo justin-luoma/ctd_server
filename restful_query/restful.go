@@ -2,11 +2,16 @@ package restful_query
 
 import (
 	"github.com/valyala/fasthttp"
-	"log"
 	"errors"
 	"strconv"
 	"time"
+	"github.com/golang/glog"
+	"flag"
 )
+
+func init() {
+	flag.Parse()
+}
 
 func Get(url string) ([]byte, error) {
 	req := fasthttp.AcquireRequest()
@@ -17,23 +22,22 @@ func Get(url string) ([]byte, error) {
 	client := &fasthttp.Client{}
 	err := client.Do(req, resp)
 	if err != nil {
-		log.Fatalln("Source: restful->Get->client")
-		log.Fatal(err)
+		glog.Error ("Source: restful->Get->client", err)
 		return nil, err
 	}
 	if resp.Header.StatusCode() != 200 {
 		if resp.Header.StatusCode() == 429 {
-			log.Fatalln("api limit exceeded, trying again")
+			glog.Warningln("api limit exceeded, trying again")
 			time.Sleep(time.Second)
 			return Get(url)
 		} else {
-			log.Fatalln("url: " + url + "status code: " + strconv.Itoa(resp.Header.StatusCode()))
+			glog.Errorln("url: " + url + "status code: " + strconv.Itoa(resp.Header.StatusCode()))
 			return nil, errors.New("url: " + string(req.URI().FullURI()) + " status: " + strconv.Itoa(resp.Header.StatusCode()))
 		}
 
 	}
 
-	log.Println("queried: " + string(req.URI().FullURI()))
+	glog.V(2).Infoln("queried: " + string(req.URI().FullURI()))
 
 	fasthttp.ReleaseRequest(req)
 

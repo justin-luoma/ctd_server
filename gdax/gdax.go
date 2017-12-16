@@ -3,11 +3,16 @@ package gdax
 import (
 	"../restful_query"
 	"encoding/json"
-	"fmt"
 	"log"
 	"math/big"
 	"time"
+	"github.com/golang/glog"
+	"flag"
 )
+
+func init()  {
+	flag.Parse()
+}
 
 var apiUrl string = "https://api.gdax.com/"
 var supportedCoins = [3]string{"BTC", "ETH", "LTC"}
@@ -68,13 +73,13 @@ func get_products() ([]GdaxProducts, error) {
 }
 
 func get_stat() /*(*[]GdaxStats, error)*/ {
+	glog.V(2).Infoln("Testing")
 	products, err := get_products()
 	if err != nil {
 		log.Fatalln(err)
 	}
-	fmt.Println(products)
 	var stats []GdaxStats
-	for i, product := range products {
+	for _, product := range products {
 		if product.Status == "online" {
 			bodyBytes, err := restful_query.Get(apiUrl + "products/" + product.Id + "/stats")
 			if err != nil {
@@ -84,8 +89,6 @@ func get_stat() /*(*[]GdaxStats, error)*/ {
 				QueryTimeStamp: time.Now().Unix()}
 			json.Unmarshal(bodyBytes, &stat)
 			stats = append(stats, stat)
-			fmt.Println(stats[i])
 		}
 	}
-	fmt.Println(stats)
 }
