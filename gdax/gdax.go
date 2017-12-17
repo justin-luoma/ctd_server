@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 	"github.com/jinzhu/copier"
+	"errors"
 )
 
 var apiUrl string = "https://api.gdax.com/"
@@ -280,7 +281,6 @@ func update_coin_data(coinId string) {
 
 	}
 
-
 	gdaxDataset.Lock()
 	defer gdaxDataset.Unlock()
 
@@ -297,6 +297,16 @@ func update_coin_data(coinId string) {
 }
 
 func Get_Coin_Stats(coin string) (coin_struct.Coin, error) {
+	var coinData coin_struct.Coin
+
+	for _, validCoin := range supportedCoins {
+		if coin == validCoin {
+			break
+		} else {
+			err := errors.New("invalid coin id: " + coin)
+			return coinData, err
+		}
+	}
 	//check to see if current data is old
 	gdaxDataset.RLock()
 	dataAge := time.Since(time.Unix(gdaxDataset.Coin[coin].QueryTimeStamp, 0)).Seconds()
@@ -304,7 +314,6 @@ func Get_Coin_Stats(coin string) (coin_struct.Coin, error) {
 	if dataAge >= 5 {
 		update_coin_data(coin)
 	}
-	var coinData coin_struct.Coin
 	gdaxDataset.RLock()
 	copier.Copy(&coinData, gdaxDataset.Coin[coin])
 	gdaxDataset.RUnlock()

@@ -97,7 +97,8 @@ func GetGdaxCoin(w http.ResponseWriter, r *http.Request) {
 	coin, err := gdax.Get_Coin_Stats(params["id"])
 	if err != nil {
 		glog.Errorln(err)
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, error.Error(err), http.StatusBadRequest)
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	err = json.NewEncoder(w).Encode(coin)
