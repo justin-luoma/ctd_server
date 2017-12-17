@@ -6,17 +6,20 @@ import (
 	"errors"
 	"flag"
 	"github.com/golang/glog"
-	"log"
-	"math/big"
 	"time"
+	"../coin_struct"
 )
+
+var apiUrl string = "https://api.gdax.com/"
+var supportedCoins [] string
 
 func init() {
 	flag.Parse()
+	currencies, err := get_currencies()
+	if err != nil {
+		glog.Errorln("Failed initialize GDAX package")
+	}
 }
-
-var apiUrl string = "https://api.gdax.com/"
-var supportedCoins = [3]string{"BTC", "ETH", "LTC"}
 
 type GdaxCurrencies struct {
 	Id      string  `json:"id,omitempty"`
@@ -40,15 +43,6 @@ type GdaxStats struct {
 	Last           string `json:"last"`
 	Volume30Day    string `json:"volume_30day"`
 	QueryTimeStamp int64  `json:"query_timestamp"`
-}
-
-type Coin struct {
-	Id             string    `json:"id"`
-	DisplayName    string    `json:"display_name"`
-	PriceBtc       big.Float `json:"price_btc"`
-	PriceEth       big.Float `json:"price_eth"`
-	PriceUsd       big.Float `json:"price_usd"`
-	QueryTimeStamp int64     `json:"query_timestamp"`
 }
 
 func get_currencies() ([]GdaxCurrencies, error) {
@@ -110,6 +104,7 @@ func get_stat() ([]GdaxStats, error) {
 	}
 }
 
-func Get_Coin_Stats(id string, *Coin) *Coin {
+func Get_Coin_Stats(id string) coin_struct.Coin {
+	gdaxCoin := coin_struct.Coin{}
 
 }
