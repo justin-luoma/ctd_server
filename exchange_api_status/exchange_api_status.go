@@ -34,16 +34,17 @@ type Status struct {
 
 func init() {
 	statusLock.Lock()
+	defer statusLock.Unlock()
 	for _, exchange := range exchanges {
 		exchangeHolder := statusLock.exchangeStatusHolder
 		exchangeHolder[exchange] = &Status{Status: 2,
 			LastUpdated: time.Now().Unix()}
 	}
-	statusLock.Unlock()
 }
 
 func Update_Status(exchange string, newStatus int) {
 	statusLock.Lock()
+	defer statusLock.Unlock()
 	exchangeHolder := statusLock.exchangeStatusHolder
 	exchangeHolder[exchange] = &Status{Status: newStatus,
 		LastUpdated: time.Now().Unix()}
@@ -51,10 +52,10 @@ func Update_Status(exchange string, newStatus int) {
 
 func check_status() []Status {
 	statusLock.RLock()
+	defer statusLock.RUnlock()
 
 	var exchangeStatuses []Status
 	exchangeHolder := statusLock.exchangeStatusHolder
-	statusLock.RUnlock()
 	for exchange, value := range exchangeHolder {
 		exchangeStatus := Status{ExchangeName: exchange,
 			Status:      value.Status,

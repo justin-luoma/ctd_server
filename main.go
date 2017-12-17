@@ -1,17 +1,19 @@
 package main
 
 import (
-	"encoding/json"
-	"log"
-	"./coincap"
-	"github.com/gorilla/mux"
-	"net/http"
-	"flag"
 	"./coin_struct"
+	"./coincap"
 	"./exchange_api_status"
+	"./gdax"
+	"encoding/json"
+	"flag"
+	"github.com/gorilla/mux"
+	"log"
+	"net/http"
+	"github.com/golang/glog"
 )
 
-func init()  {
+func init() {
 	flag.Parse()
 }
 
@@ -40,6 +42,7 @@ type Address struct {
 
 // our main function
 func main() {
+	gdax.Init()
 	exchange_api_status.Start_Exchange_Monitoring()
 	/*people = append(people, Person{ID: "1", Firstname: "John", Lastname: "Doe", Address: &Address{City: "City X", State: "State X"}})
 	people = append(people, Person{ID: "2", Firstname: "Koko", Lastname: "Doe", Address: &Address{City: "City Z", State: "State Y"}})
@@ -51,6 +54,7 @@ func main() {
 	router.HandleFunc("/people/{id}", CreatePerson).Methods("POST")
 	router.HandleFunc("/people/{id}", DeletePerson).Methods("DELETE")*/
 	router.HandleFunc("/coin/{id}", GetCoin).Methods("GET")
+	router.HandleFunc("/gdax/coin/{id}", GetGdaxCoin).Methods("GET")
 
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
@@ -88,6 +92,21 @@ func DeletePerson(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(people)
 	}
 }*/
+
+func GetGdaxCoin(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	coin, err := gdax.Get_Coin_Stats(params["id"])
+	if err != nil {
+		glog.Errorln(err)
+		w.WriteHeader(http.StatusInternalServerError)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(coin)
+	if err != nil {
+		glog.Errorln(err)
+	}
+}
+
 func GetCoin(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	coin := coin_struct.Coin{}
@@ -99,21 +118,21 @@ func GetCoin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	/*
-	url := fmt.Sprintf("http://coincap.io/page/%s", params["id"])
+		url := fmt.Sprintf("http://coincap.io/page/%s", params["id"])
 
-	response, err := http.Get(url)
-	if err != nil {
-		fmt.Printf("The HTTP request failed with error %s\n", err)
-	} else {
-		coin := Coin{QueryTimeStamp: time.Now().Unix()}
-		err := json.NewDecoder(response.Body).Decode(&coin)
+		response, err := http.Get(url)
 		if err != nil {
-			log.Println(err)
-		}
-		w.Header().Set("Content-Type", "application/json")
-		err = json.NewEncoder(w).Encode(coin)
-		if err != nil {
-			log.Println(err)
-		}
-	}*/
+			fmt.Printf("The HTTP request failed with error %s\n", err)
+		} else {
+			coin := Coin{QueryTimeStamp: time.Now().Unix()}
+			err := json.NewDecoder(response.Body).Decode(&coin)
+			if err != nil {
+				log.Println(err)
+			}
+			w.Header().Set("Content-Type", "application/json")
+			err = json.NewEncoder(w).Encode(coin)
+			if err != nil {
+				log.Println(err)
+			}
+		}*/
 }
