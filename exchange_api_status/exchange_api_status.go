@@ -9,32 +9,34 @@ import (
 var exchanges = []string{"gdax", "coincap"}
 
 /*
-status holder map, values:
+Status holder map, values:
 	0 : offline
 	1 : online
 	2 : hasn't checked in
 */
 var statusLock = struct {
 	sync.RWMutex
-	exchangeStatusHolder map[string]*status
-}{exchangeStatusHolder: make(map[string]*status)}
+	exchangeStatusHolder map[string]*Status
+}{exchangeStatusHolder: make(map[string]*Status)}
 
-type status struct {
+type Status struct {
+	ExchangeName string
 	Status      int
 	LastUpdated int64
 }
 
+/*
 type Status struct {
-	ExchangeName string
 	Status       int
 	LastUpdated  int64
 }
+*/
 
 func init() {
 	statusLock.Lock()
 	for _, exchange := range exchanges {
 		exchangeHolder := statusLock.exchangeStatusHolder
-		exchangeHolder[exchange] = &status{Status: 2,
+		exchangeHolder[exchange] = &Status{Status: 2,
 			LastUpdated: time.Now().Unix()}
 	}
 	statusLock.Unlock()
@@ -43,7 +45,7 @@ func init() {
 func Update_Status(exchange string, newStatus int) {
 	statusLock.Lock()
 	exchangeHolder := statusLock.exchangeStatusHolder
-	exchangeHolder[exchange] = &status{Status: newStatus,
+	exchangeHolder[exchange] = &Status{Status: newStatus,
 		LastUpdated: time.Now().Unix()}
 }
 

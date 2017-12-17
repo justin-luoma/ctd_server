@@ -70,7 +70,9 @@ func get_products() ([]GdaxProducts, error) {
 	return products, nil
 }
 
-func get_stat() ([]GdaxStats, error) {
+func
+
+func get_stats() ([]GdaxStats, error) {
 	products, err := get_products()
 	if err != nil {
 		glog.Errorln(err)

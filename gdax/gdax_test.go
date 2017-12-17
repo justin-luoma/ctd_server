@@ -14,5 +14,5 @@ func init() {
 }
 
 func TestPullCurrencies(t *testing.T) {
-	get_stat()
+	get_stats()
 }

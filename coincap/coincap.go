@@ -4,7 +4,6 @@ import (
 	"../restful_query"
 	"encoding/json"
 	"flag"
-	"github.com/golang/glog"
 	"github.com/jinzhu/copier"
 	"log"
 	"time"
@@ -54,7 +53,6 @@ func get_map() ([]CoinCapMap, error) {
 }
 
 func get_page(product string) CoinCapPage {
-	glog.V(2).Infoln("Testing")
 	bodyBytes, err := restful_query.Get(apiUrl + "page/" + product)
 	if err != nil {
 		log.Fatalln(err)
