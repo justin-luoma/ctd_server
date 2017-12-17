@@ -5,19 +5,19 @@ import (
 	"../exchange_api_status"
 	"../restful_query"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"github.com/golang/glog"
+	"github.com/jinzhu/copier"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
-	"github.com/jinzhu/copier"
-	"errors"
 )
 
 var apiUrl string = "https://api.gdax.com/"
-var supportedCoins = [3]string{"BTC","ETH","LTC"}
+var supportedCoins = [3]string{"BTC", "ETH", "LTC"}
 var productsIds []string
 
 var gdaxDataset = struct {
@@ -73,8 +73,12 @@ func get_currency(id string) (*GdaxCurrencies, error) {
 		glog.Errorln(err)
 		return nil, err
 	}
+
 	currencies := GdaxCurrencies{}
 	json.Unmarshal(bodyBytes, &currencies)
+	if id == "ETH" {
+		currencies.Name = "Ethereum"
+	}
 
 	return &currencies, nil
 }
@@ -255,7 +259,7 @@ func update_coin_data(coinId string) {
 			ethCoin.ID = "ETH"
 			ethCoin.PriceEth = 1
 			ethCoin.QueryTimeStamp = queryTime
-			ethCoin.DisplayName = "Ethereum"
+			ethCoin.DisplayName = currency.Name
 			switch quoteCurrency {
 			case "USD":
 				ethCoin.PriceUsd = stats.Last
@@ -296,16 +300,41 @@ func update_coin_data(coinId string) {
 	}
 }
 
+func Get_Coins() ([]coin_struct.Coin, error) {
+	var coin coin_struct.Coin
+	var coins []coin_struct.Coin
+
+	var err error
+
+	for _, c := range supportedCoins {
+		var currency, err = get_currency(c)
+		if err != nil {
+			glog.Error(err)
+			glog.Error("invalid response for GDAX currency: " + c)
+		} else {
+			coin.ID = currency.Id
+			coin.DisplayName = currency.Name
+			coins = append(coins, coin)
+		}
+	}
+
+	return coins, err
+}
+
 func Get_Coin_Stats(coin string) (coin_struct.Coin, error) {
 	var coinData coin_struct.Coin
 
+	var isValidCoin bool
+
 	for _, validCoin := range supportedCoins {
 		if coin == validCoin {
+			isValidCoin = true
 			break
-		} else {
-			err := errors.New("invalid coin id: " + coin)
-			return coinData, err
 		}
+	}
+	if !isValidCoin {
+		err := errors.New("invalid coin id: " + coin)
+		return coinData, err
 	}
 	//check to see if current data is old
 	gdaxDataset.RLock()

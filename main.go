@@ -53,7 +53,9 @@ func main() {
 	router.HandleFunc("/people/{id}", CreatePerson).Methods("POST")
 	router.HandleFunc("/people/{id}", DeletePerson).Methods("DELETE")*/
 	router.HandleFunc("/coin/{id}", GetCoin).Methods("GET")
-	router.HandleFunc("/gdax/coin/{id}", GetGdaxCoin).Methods("GET")
+
+	router.HandleFunc("/gdax/coins", get_gdax_coins).Methods("GET")
+	router.HandleFunc("/gdax/coin/{id}", get_gdax_coin).Methods("GET")
 
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
@@ -92,7 +94,22 @@ func DeletePerson(w http.ResponseWriter, r *http.Request) {
 	}
 }*/
 
-func GetGdaxCoin(w http.ResponseWriter, r *http.Request) {
+func get_gdax_coins(w http.ResponseWriter, r *http.Request) {
+	coins, err := gdax.Get_Coins()
+	if err != nil {
+		glog.Errorln(err)
+		http.Error(w, "Internal Server error", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(coins)
+	if err != nil {
+		glog.Errorln(err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
+}
+
+func get_gdax_coin(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	coin, err := gdax.Get_Coin_Stats(params["id"])
 	if err != nil {
@@ -104,6 +121,7 @@ func GetGdaxCoin(w http.ResponseWriter, r *http.Request) {
 	err = json.NewEncoder(w).Encode(coin)
 	if err != nil {
 		glog.Errorln(err)
+		http.Error(w, "server error", http.StatusInternalServerError)
 	}
 }
 
