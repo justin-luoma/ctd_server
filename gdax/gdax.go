@@ -2,13 +2,12 @@ package gdax
 
 import (
 	"../coin_struct"
+	"../decimal_math"
 	"../exchange_api_status"
 	"../restful_query"
-	"../decimal_math"
-	"encoding/json"
+	json2 "encoding/json"
 	"errors"
 	"flag"
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/jinzhu/copier"
 	"strconv"
@@ -81,7 +80,7 @@ func get_currency(id string) (*GdaxCurrencies, error) {
 	}
 
 	currencies := GdaxCurrencies{}
-	json.Unmarshal(bodyBytes, &currencies)
+	json2.Unmarshal(bodyBytes, &currencies)
 	if id == "ETH" {
 		currencies.Name = "Ethereum"
 	}
@@ -98,7 +97,7 @@ func get_products() ([]GdaxProducts, error) {
 	}
 
 	var products []GdaxProducts
-	json.Unmarshal(bodyBytes, &products)
+	json2.Unmarshal(bodyBytes, &products)
 
 	return products, nil
 }
@@ -146,7 +145,7 @@ func get_stats() ([]GdaxStats, error) {
 			Product:        product.Id,
 			QueryTimeStamp: time.Now().Unix(),
 		}
-		json.Unmarshal(bodyBytes, &queryStat)
+		json2.Unmarshal(bodyBytes, &queryStat)
 
 		var floatStat GdaxStats
 		convert_stats(&queryStat, &floatStat)
@@ -169,7 +168,7 @@ func get_product_stats(productId string) (GdaxStats, error) {
 		glog.Errorln(err)
 		return productStats, err
 	}
-	json.Unmarshal(bodyBytes, &productQStat)
+	json2.Unmarshal(bodyBytes, &productQStat)
 
 	convert_stats(&productQStat, &productStats)
 
@@ -268,7 +267,6 @@ func update_coin_data(coinId string) {
 			case "GBP":
 				btcCoin.PriceGbp = stats.Last
 			}
-			fmt.Println(btcCoin)
 		case "ETH":
 			ethCoin.ID = "ETH"
 			ethCoin.PriceEth = 1
@@ -360,7 +358,7 @@ func Get_Coin_Stats(coin string) (coin_struct.Coin, error) {
 	gdaxDataset.RLock()
 	dataAge := time.Since(time.Unix(gdaxDataset.Coin[coin].QueryTimeStamp, 0)).Seconds()
 	gdaxDataset.RUnlock()
-	if dataAge >= 5 {
+	if dataAge >= 10 {
 		update_coin_data(coin)
 	}
 	gdaxDataset.RLock()
