@@ -4,6 +4,7 @@ import (
 	"../coin_struct"
 	"../exchange_api_status"
 	"../restful_query"
+	"../decimal_math"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -25,6 +26,7 @@ var gdaxDataset = struct {
 	Coin map[string]*coin_struct.Coin
 }{Coin: make(map[string]*coin_struct.Coin)}
 
+//noinspection GoNameStartsWithPackageName
 type GdaxCurrencies struct {
 	Id      string `json:"id,omitempty"`
 	Name    string `json:"name,omitempty"`
@@ -33,6 +35,7 @@ type GdaxCurrencies struct {
 	Message string `json:"message,omitempty"`
 }
 
+//noinspection GoNameStartsWithPackageName
 type GdaxProducts struct {
 	Id            string `json:"id,omitempty"`
 	BaseCurrency  string `json:"base_currency"`
@@ -40,6 +43,7 @@ type GdaxProducts struct {
 	Status        string `json:"status,omitempty"`
 }
 
+//noinspection GoNameStartsWithPackageName
 type GdaxStatsQuery struct {
 	Product        string `json:"id"`
 	Open           string `json:"open"`
@@ -51,6 +55,7 @@ type GdaxStatsQuery struct {
 	QueryTimeStamp int64  `json:"query_timestamp"`
 }
 
+//noinspection GoNameStartsWithPackageName
 type GdaxStats struct {
 	Product        string  `json:"id"`
 	Open           float64 `json:"open"`
@@ -67,6 +72,7 @@ func init() {
 	build_gdax_dataset()
 }
 
+//noinspection ALL
 func get_currency(id string) (*GdaxCurrencies, error) {
 	bodyBytes, err := restful_query.Get(apiUrl + "currencies/" + id)
 	if err != nil {
@@ -83,6 +89,7 @@ func get_currency(id string) (*GdaxCurrencies, error) {
 	return &currencies, nil
 }
 
+//noinspection ALL
 func get_products() ([]GdaxProducts, error) {
 	bodyBytes, err := restful_query.Get(apiUrl + "products")
 	if err != nil {
@@ -96,6 +103,7 @@ func get_products() ([]GdaxProducts, error) {
 	return products, nil
 }
 
+//noinspection ALL
 func get_online_products() ([]GdaxProducts, []GdaxProducts, error) {
 	products, err := get_products()
 	if err != nil {
@@ -119,6 +127,7 @@ func get_online_products() ([]GdaxProducts, []GdaxProducts, error) {
 	return onlineProducts, offlineProducts, nil
 }
 
+//noinspection ALL
 func get_stats() ([]GdaxStats, error) {
 	onlineProducts, _, err := get_online_products()
 	if err != nil {
@@ -147,6 +156,7 @@ func get_stats() ([]GdaxStats, error) {
 	return stats, nil
 }
 
+//noinspection ALL
 func get_product_stats(productId string) (GdaxStats, error) {
 	var productQStat = GdaxStatsQuery{
 		Product:        productId,
@@ -166,6 +176,7 @@ func get_product_stats(productId string) (GdaxStats, error) {
 	return productStats, nil
 }
 
+//noinspection ALL
 func convert_stats(stringStatsStruct *GdaxStatsQuery, floatStatsStruct *GdaxStats) {
 	floatStatsStruct.Product = stringStatsStruct.Product
 	floatStatsStruct.QueryTimeStamp = stringStatsStruct.QueryTimeStamp
@@ -198,6 +209,7 @@ func Init() {
 	fmt.Println(stats)*/
 }
 
+//noinspection ALL
 func build_gdax_dataset() {
 	/*gdaxDataset.Lock()
 	defer gdaxDataset.Unlock()*/
@@ -215,6 +227,7 @@ func build_gdax_dataset() {
 	}
 }
 
+//noinspection ALL
 func update_coin_data(coinId string) {
 	glog.V(2).Infoln("update_coin_data " + coinId)
 	var productsToUpdate []string
@@ -249,6 +262,7 @@ func update_coin_data(coinId string) {
 			switch quoteCurrency {
 			case "USD":
 				btcCoin.PriceUsd = stats.Last
+				btcCoin.DayDeltaPriceUsd = decimal_math.Calculate_Percent_Change(stats.Open, stats.Last)
 			case "EUR":
 				btcCoin.PriceEur = stats.Last
 			case "GBP":
@@ -260,9 +274,11 @@ func update_coin_data(coinId string) {
 			ethCoin.PriceEth = 1
 			ethCoin.QueryTimeStamp = queryTime
 			ethCoin.DisplayName = currency.Name
+			ethCoin.DayDeltaPriceUsd = decimal_math.Calculate_Percent_Change(stats.Open, stats.Last)
 			switch quoteCurrency {
 			case "USD":
 				ethCoin.PriceUsd = stats.Last
+				btcCoin.DayDeltaPriceUsd = decimal_math.Calculate_Percent_Change(stats.Open, stats.Last)
 			case "EUR":
 				ethCoin.PriceEur = stats.Last
 			case "BTC":
@@ -273,9 +289,11 @@ func update_coin_data(coinId string) {
 			ltcCoin.PriceLtc = 1
 			ltcCoin.QueryTimeStamp = queryTime
 			ltcCoin.DisplayName = currency.Name
+			ltcCoin.DayDeltaPriceUsd = decimal_math.Calculate_Percent_Change(stats.Open, stats.Last)
 			switch quoteCurrency {
 			case "USD":
 				ltcCoin.PriceUsd = stats.Last
+				btcCoin.DayDeltaPriceUsd = decimal_math.Calculate_Percent_Change(stats.Open, stats.Last)
 			case "EUR":
 				ltcCoin.PriceEur = stats.Last
 			case "BTC":
@@ -300,6 +318,7 @@ func update_coin_data(coinId string) {
 	}
 }
 
+//noinspection ALL
 func Get_Coins() ([]coin_struct.Coin, error) {
 	var coin coin_struct.Coin
 	var coins []coin_struct.Coin
@@ -321,6 +340,7 @@ func Get_Coins() ([]coin_struct.Coin, error) {
 	return coins, err
 }
 
+//noinspection ALL
 func Get_Coin_Stats(coin string) (coin_struct.Coin, error) {
 	var coinData coin_struct.Coin
 
