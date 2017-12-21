@@ -7,10 +7,11 @@ import (
 	"./gdax"
 	"encoding/json"
 	"flag"
+	"github.com/golang/glog"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-	"github.com/golang/glog"
+	"strings"
 )
 
 func init() {
@@ -111,17 +112,23 @@ func get_gdax_coins(w http.ResponseWriter, r *http.Request) {
 
 func get_gdax_coin(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	coin, err := gdax.Get_Coin_Stats(params["id"])
+	jsonData, err := gdax.Get_Coin_Stats(params["id"])
 	if err != nil {
 		glog.Errorln(err)
-		http.Error(w, error.Error(err), http.StatusBadRequest)
-		return
+		if strings.HasPrefix(err.Error(), "invalid coinId id:") {
+			http.Error(w, error.Error(err), http.StatusBadRequest)
+			return
+		} else {
+			http.Error(w, "server error", http.StatusInternalServerError)
+			return
+		}
 	}
 	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(coin)
+	err = json.NewEncoder(w).Encode(jsonData)
 	if err != nil {
 		glog.Errorln(err)
 		http.Error(w, "server error", http.StatusInternalServerError)
+		return
 	}
 }
 
