@@ -1,13 +1,13 @@
 package coincap
 
 import (
+	"../coin_struct"
 	"../restful_query"
 	"encoding/json"
 	"flag"
 	"github.com/jinzhu/copier"
 	"log"
 	"time"
-	"../coin_struct"
 )
 
 func init() {

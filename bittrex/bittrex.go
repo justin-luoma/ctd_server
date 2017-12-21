@@ -1,9 +1,9 @@
 package bittrex
 
 import (
-	"github.com/toorop/go-bittrex"
-	"fmt"
 	json2 "encoding/json"
+	"fmt"
+	"github.com/toorop/go-bittrex"
 )
 
 const (
@@ -11,10 +11,12 @@ const (
 	API_SECRET = ""
 )
 
-func test()  {
+func test() {
 	bittrex := bittrex.New(API_KEY, API_SECRET)
 
-	markets, _ := bittrex.GetMarkets()
+	//markets, _ := bittrex.GetMarkets()
+	//markets, _ := bittrex.GetMarketSummary("USDT-BTC")
+	markets, _ := bittrex.GetMarketSummaries()
 	json, err := json2.MarshalIndent(markets, "", " ")
 	if err != nil {
 		fmt.Println("error:", err)

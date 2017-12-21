@@ -1,8 +1,8 @@
 package gdax
 
 import (
-	"testing"
 	"flag"
+	"testing"
 )
 
 func init() {

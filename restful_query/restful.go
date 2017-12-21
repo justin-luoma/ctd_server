@@ -1,12 +1,12 @@
 package restful_query
 
 import (
-	"github.com/valyala/fasthttp"
 	"errors"
+	"flag"
+	"github.com/golang/glog"
+	"github.com/valyala/fasthttp"
 	"strconv"
 	"time"
-	"github.com/golang/glog"
-	"flag"
 )
 
 func init() {
@@ -22,7 +22,7 @@ func Get(url string) ([]byte, error) {
 	client := &fasthttp.Client{}
 	err := client.Do(req, resp)
 	if err != nil {
-		glog.Error ("Source: restful->Get->client", err)
+		glog.Error("Source: restful->Get->client", err)
 		return nil, err
 	}
 	if resp.Header.StatusCode() != 200 {

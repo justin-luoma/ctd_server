@@ -1,9 +1,9 @@
 package exchange_api_status
 
 import (
+	"github.com/golang/glog"
 	"sync"
 	"time"
-	"github.com/golang/glog"
 )
 
 var exchanges = []string{"gdax", "coincap"}
@@ -21,8 +21,8 @@ var statusLock = struct {
 
 type Status struct {
 	ExchangeName string
-	Status      int
-	LastUpdated int64
+	Status       int
+	LastUpdated  int64
 }
 
 /*
@@ -74,6 +74,6 @@ func watch_status() {
 	}
 }
 
-func Start_Exchange_Monitoring()  {
+func Start_Exchange_Monitoring() {
 	go watch_status()
 }

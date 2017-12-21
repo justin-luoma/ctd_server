@@ -1,9 +1,9 @@
 package restful_query
 
 import (
-	"testing"
-	"log"
 	"fmt"
+	"log"
+	"testing"
 )
 
 func TestQuery(t *testing.T) {
@@ -18,4 +18,3 @@ func TestQuery(t *testing.T) {
 	}
 	fmt.Println(body)
 }
-
