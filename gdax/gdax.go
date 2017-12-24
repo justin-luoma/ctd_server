@@ -183,7 +183,7 @@ func update_coin_data(coinId string, currencies *[]GdaxCurrencies, onlineProduct
 					glog.Warningln("Failed to retriece stats for product: " + product.Id)
 					continue
 				}
-				delta := decimal_math.Calculate_Percent_Change(stats.Open, stats.Last)
+				delta := decimal_math.Calculate_Percent_Change_Float(stats.Open, stats.Last)
 				/*
 					build the structure for the coin:
 					{
