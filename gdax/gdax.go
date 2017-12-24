@@ -76,8 +76,8 @@ func is_data_old(coinId string, maxAgeSeconds int) bool {
 			continue
 		}
 		dataAge := time.Since(
-			time.Unix(coin[quote].(map[string]interface{})[quote+"QueryTimestamp"].(int64), 0)).Seconds()
-		if dataAge > 10 {
+			time.Unix(coin[quote].(map[string]interface{})["QueryTimestamp"].(int64), 0)).Seconds()
+		if int(dataAge) > maxAgeSeconds {
 			dataOld = true
 			return dataOld
 		}
@@ -112,9 +112,9 @@ func build_json_struct(coinId string) *map[string]interface{} {
 		*/
 		quoteData := gdaxData[quote].(map[string]interface{})
 		quoteTmp := map[string]interface{}{
-			strings.ToLower(quote) + "_price":           quoteData["Price"+quote],
-			strings.ToLower(quote) + "_24_hour_change":  quoteData["Delta"+quote],
-			strings.ToLower(quote) + "_query_timestamp": quoteData[quote+"QueryTimestamp"],
+			strings.ToLower(quote) + "_price":           quoteData["Price"],
+			strings.ToLower(quote) + "_24_hour_change":  quoteData["Delta"],
+			strings.ToLower(quote) + "_query_timestamp": quoteData["QueryTimestamp"],
 		}
 
 		for k, v := range quoteTmp {
@@ -154,6 +154,10 @@ func build_gdax_dataset() {
 
 		//TEST SECTION//
 		//_ = build_json_struct("BTC")
+		/*gdaxDataSet.RLock()
+		jsonData, _ := json2.MarshalIndent(gdaxDataSet.Coin, "", " ")
+		gdaxDataSet.RUnlock()
+		fmt.Println(string(jsonData))*/
 	}
 }
 
@@ -189,18 +193,18 @@ func update_coin_data(coinId string, currencies *[]GdaxCurrencies, onlineProduct
 					{
 					 "DisplayName": "Bitcoin",
 					 "USD": {
-					  "DeltaUSD": -5.63,
-					  "PriceUSD": 16336.62,
-					  "USDQueryTimestamp": 1513825686
+					  "Delta": -5.63,
+					  "Price": 16336.62,
+					  "QueryTimestamp": 1513825686
 					 }
 					}
 				*/
 				coinData := map[string]interface{}{
 					"DisplayName": currencyNames[coinId],
 					product.QuoteCurrency: map[string]interface{}{
-						"Price" + product.QuoteCurrency:          stats.Last,
-						"Delta" + product.QuoteCurrency:          delta,
-						product.QuoteCurrency + "QueryTimestamp": stats.QueryTimeStamp,
+						"Price":          stats.Last,
+						"Delta":          delta,
+						"QueryTimestamp": stats.QueryTimeStamp,
 					},
 				}
 
@@ -234,15 +238,22 @@ func Get_Coins() ([]coin_struct.Coin, error) {
 
 	var err error
 
-	for c, _ := range currencyTypes {
+	for c, t := range currencyTypes {
 		var currency, err = get_currency(c)
 		if err != nil {
 			glog.Error(err)
 			glog.Error("invalid response for GDAX currency: " + c)
-		} else {
+		} else if t == "crypto" {
 			coin.ID = currency.Id
 			coin.DisplayName = currency.Name
+			if currency.Status == "online" {
+				coin.IsActive = true
+			} else {
+				coin.IsActive = false
+			}
 			coins = append(coins, coin)
+		} else {
+			continue
 		}
 	}
 

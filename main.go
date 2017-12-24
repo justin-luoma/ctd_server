@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"./bittrex"
 )
 
 func init() {
@@ -57,6 +58,9 @@ func main() {
 
 	router.HandleFunc("/gdax/coins", get_gdax_coins).Methods("GET")
 	router.HandleFunc("/gdax/coin/{id}", get_gdax_coin).Methods("GET")
+
+	router.HandleFunc("/bittrex/coins", get_bittrex_coins).Methods("GET")
+	router.HandleFunc("/bittrex/coin/{id}", get_bittrex_coin).Methods("GET")
 
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
@@ -112,7 +116,45 @@ func get_gdax_coins(w http.ResponseWriter, r *http.Request) {
 
 func get_gdax_coin(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	jsonData, err := gdax.Get_Coin_Stats(params["id"])
+	jsonData, err := gdax.Get_Coin_Stats(strings.ToUpper(params["id"]))
+	if err != nil {
+		glog.Errorln(err)
+		if strings.HasPrefix(err.Error(), "invalid coinId id:") {
+			http.Error(w, error.Error(err), http.StatusBadRequest)
+			return
+		} else {
+			http.Error(w, "server error", http.StatusInternalServerError)
+			return
+		}
+	}
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(jsonData)
+	if err != nil {
+		glog.Errorln(err)
+		http.Error(w, "server error", http.StatusInternalServerError)
+		return
+	}
+}
+
+func get_bittrex_coins(w http.ResponseWriter, r *http.Request) {
+	coins, err := bittrex.Get_Coins()
+	if err != nil {
+		glog.Errorln(err)
+		http.Error(w, "Internal Server error", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(coins)
+	if err != nil {
+		glog.Errorln(err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+	}
+
+}
+
+func get_bittrex_coin(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	jsonData, err := bittrex.Get_Coin_Stats(strings.ToUpper(params["id"]))
 	if err != nil {
 		glog.Errorln(err)
 		if strings.HasPrefix(err.Error(), "invalid coinId id:") {

@@ -14,4 +14,6 @@ type Coin struct {
 	DayDeltaPriceBgp float64 `json:"24hour_price_gbp,omitempty"`
 	DayDeltaPriceBtc float64 `json:"24hour_price_btc,omitempty"`
 	QueryTimeStamp   int64   `json:"query_timestamp,omitempty"`
+	IsActive         bool    `json:"is_active"`
+	StatusMessage    string  `json:"status_message,omitempty"`
 }
