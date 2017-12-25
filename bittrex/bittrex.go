@@ -12,7 +12,10 @@ import (
 	"../coin_struct"
 	"errors"
 	"flag"
+	"../exchange_api_status"
 )
+
+//TODO replace glog.Fatal with proper handling, needs testing to find out how the bittrex library will crash.
 
 const (
 	API_KEY    = ""
@@ -125,7 +128,6 @@ func build_json_data(coinId string) *map[string]interface{} {
 			for k, v := range marketTmp {
 				jsonData[k] = v
 			}
-
 		}
 	}
 
@@ -142,6 +144,8 @@ func build_data_set() {
 	if err != nil {
 		glog.Fatalln(err)
 	}
+
+	exchange_api_status.Update_Status("bittrex", 1)
 
 	currencyNames := make(map[string]string)
 

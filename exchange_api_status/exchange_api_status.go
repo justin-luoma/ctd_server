@@ -6,7 +6,9 @@ import (
 	"time"
 )
 
-var exchanges = []string{"gdax", "coincap"}
+//TODO create function to make calls to each exchange to ensure they are online when not having checked in a while
+
+var exchanges = []string{"gdax", "coincap", "bittrex"}
 
 /*
 Status holder map, values:
