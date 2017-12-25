@@ -2,7 +2,7 @@ package gdax
 
 import (
 	json2 "encoding/json"
-	"../restful_query"
+	"restful_query"
 	"github.com/golang/glog"
 )
 

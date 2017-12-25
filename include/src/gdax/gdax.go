@@ -1,9 +1,9 @@
 package gdax
 
 import (
-	"../coin_struct"
-	"../decimal_math"
-	"../exchange_api_status"
+	"coin_struct"
+	"decimal_math"
+	"exchange_api_status"
 	"errors"
 	"flag"
 	"github.com/golang/glog"

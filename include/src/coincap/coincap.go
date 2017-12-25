@@ -1,8 +1,8 @@
 package coincap
 
 import (
-	"../coin_struct"
-	"../restful_query"
+	"coin_struct"
+	"restful_query"
 	"encoding/json"
 	"flag"
 	"github.com/jinzhu/copier"

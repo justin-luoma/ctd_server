@@ -5,14 +5,14 @@ import (
 	"sync"
 	"github.com/golang/glog"
 	"strings"
-	"../decimal_math"
+	"decimal_math"
 	"time"
 	"fmt"
 	json2 "encoding/json"
-	"../coin_struct"
+	"coin_struct"
 	"errors"
 	"flag"
-	"../exchange_api_status"
+	"exchange_api_status"
 )
 
 //TODO replace glog.Fatal with proper handling, needs testing to find out how the bittrex library will crash.

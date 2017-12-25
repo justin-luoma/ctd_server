@@ -1,10 +1,10 @@
 package main
 
 import (
-	"./coin_struct"
-	"./coincap"
-	"./exchange_api_status"
-	"./gdax"
+	"coin_struct"
+	"coincap"
+	"exchange_api_status"
+	"gdax"
 	"encoding/json"
 	"flag"
 	"github.com/golang/glog"
@@ -12,7 +12,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"./bittrex"
+	"bittrex"
 )
 
 func init() {
