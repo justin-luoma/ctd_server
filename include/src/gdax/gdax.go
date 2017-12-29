@@ -71,7 +71,7 @@ func is_data_old(coinId string, maxAgeSeconds int) bool {
 	defer gdaxDataSet.RUnlock()
 	coin := gdaxDataSet.Coin[coinId].(map[string]interface{})
 
-	for quote, _ := range currencyTypes {
+	for quote := range currencyTypes {
 		if !valid_product_stats(coinId, quote) {
 			continue
 		}
@@ -102,7 +102,7 @@ func build_json_struct(coinId string) *map[string]interface{} {
 		"id":           coinId,
 		"display_name": gdaxData["DisplayName"],
 	}
-	for quote, _ := range currencyTypes {
+	for quote := range currencyTypes {
 		if !valid_product_stats(coinId, quote) {
 			continue
 		}

@@ -1,18 +1,19 @@
 package bittrex
 
 import (
-	"github.com/toorop/go-bittrex"
-	"sync"
-	"github.com/golang/glog"
-	"strings"
-	"decimal_math"
-	"time"
-	"fmt"
-	json2 "encoding/json"
 	"coin_struct"
+	"decimal_math"
+	json2 "encoding/json"
 	"errors"
-	"flag"
 	"exchange_api_status"
+	"flag"
+	"fmt"
+	"strings"
+	"sync"
+	"time"
+
+	"github.com/golang/glog"
+	"github.com/toorop/go-bittrex"
 )
 
 //TODO replace glog.Fatal with proper handling, needs testing to find out how the bittrex library will crash.
@@ -168,7 +169,7 @@ func build_data_set() {
 
 		delta := decimal_math.Calculate_Percent_Change_Decimal(market.PrevDay, market.Last)
 		timeStamp, _ := time.Parse(time.RFC3339, market.TimeStamp + "Z")
-		priceFloat := decimal_math.Convert_To_Float64(market.Last)
+		priceFloat := decimal_math.Convert_Dec_To_Float64(market.Last)
 
 		coinData := map[string]interface{}{
 			"DisplayName": currencyNames[baseCurrency],
