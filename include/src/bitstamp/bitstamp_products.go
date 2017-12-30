@@ -15,10 +15,6 @@ type BitstampProducts struct {
 	URLSymbol       string `json:"url_symbol"`
 	Description     string `json:"description"`
 }
-type BitstampProduct struct {
-	Id      string `json:"id,omitempty"`
-	Name    string `json:"name,omitempty"`
-}
 
 //noinspection ALL
 func get_products() ([]BitstampProducts, error) {

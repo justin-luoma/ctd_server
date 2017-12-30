@@ -58,17 +58,8 @@ func main() {
 	router.HandleFunc("/people/{id}", DeletePerson).Methods("DELETE")*/
 	router.HandleFunc("/coin/{id}", GetCoin).Methods("GET")
 
-	router.HandleFunc("/gdax/coins", get_gdax_coins).Methods("GET")
-	router.HandleFunc("/gdax/coin/{id}", get_gdax_coin).Methods("GET")
-
-	router.HandleFunc("/bittrex/coins", get_bittrex_coins).Methods("GET")
-	router.HandleFunc("/bittrex/coin/{id}", get_bittrex_coin).Methods("GET")
-
-	router.HandleFunc("/poloniex/coins", get_poloniex_coins).Methods("GET")
-	router.HandleFunc("/poloniex/coin/{id}", get_poloniex_coin).Methods("GET")
-
-	router.HandleFunc("/bitstamp/coins", get_bitstamp_coins).Methods("GET")
-	router.HandleFunc("/bitstamp/coin/{id}", get_bitstamp_coin).Methods("GET")
+	router.HandleFunc("/{exchange}/coins", get_exchange_coins).Methods("GET")
+	router.HandleFunc("/{exchange}/coin/{id}", get_exchange_coin).Methods("GET")
 
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
@@ -107,8 +98,21 @@ func DeletePerson(w http.ResponseWriter, r *http.Request) {
 	}
 }*/
 
-func get_gdax_coins(w http.ResponseWriter, r *http.Request) {
-	coins, err := gdax.Get_Coins()
+func get_exchange_coins(w http.ResponseWriter, r *http.Request) {
+	params := mux.Vars(r)
+	var coins []coin_struct.Coin
+	var err error
+	switch params["exchange"]{
+	case "gdax":
+		coins, err = gdax.Get_Coins()
+	case "poloniex":
+		coins, err = poloniex.Get_Coins()
+	case "bittrex":
+		coins, err = bittrex.Get_Coins()
+	case "bitstamp":
+		coins, err = bitstamp.Get_Coins()
+	}
+
 	if err != nil {
 		glog.Errorln(err)
 		http.Error(w, "Internal Server error", http.StatusInternalServerError)
@@ -122,9 +126,20 @@ func get_gdax_coins(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func get_gdax_coin(w http.ResponseWriter, r *http.Request) {
+func get_exchange_coin(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
-	jsonData, err := gdax.Get_Coin_Stats(strings.ToUpper(params["id"]))
+	var jsonData *map[string]interface{}
+	var err error
+	switch params["exchange"]{
+	case "gdax":
+		jsonData, err = gdax.Get_Coin_Stats(strings.ToUpper(params["id"]))
+	case "poloniex":
+		jsonData, err = poloniex.Get_Coin_Stats(strings.ToUpper(params["id"]))
+	case "bittrex":
+		jsonData, err = bittrex.Get_Coin_Stats(strings.ToUpper(params["id"]))
+	case "bitstamp":
+		jsonData, err = bitstamp.Get_Coin_Stats(strings.ToUpper(params["id"]))
+	}
 	if err != nil {
 		glog.Errorln(err)
 		if strings.HasPrefix(err.Error(), "invalid coinId id:") {
@@ -144,120 +159,6 @@ func get_gdax_coin(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func get_bittrex_coins(w http.ResponseWriter, r *http.Request) {
-	coins, err := bittrex.Get_Coins()
-	if err != nil {
-		glog.Errorln(err)
-		http.Error(w, "Internal Server error", http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(coins)
-	if err != nil {
-		glog.Errorln(err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-	}
-
-}
-
-func get_bittrex_coin(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	jsonData, err := bittrex.Get_Coin_Stats(strings.ToUpper(params["id"]))
-	if err != nil {
-		glog.Errorln(err)
-		if strings.HasPrefix(err.Error(), "invalid coinId id:") {
-			http.Error(w, error.Error(err), http.StatusBadRequest)
-			return
-		} else {
-			http.Error(w, "server error", http.StatusInternalServerError)
-			return
-		}
-	}
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(jsonData)
-	if err != nil {
-		glog.Errorln(err)
-		http.Error(w, "server error", http.StatusInternalServerError)
-		return
-	}
-}
-
-func get_poloniex_coins(w http.ResponseWriter, r *http.Request) {
-	coins, err := poloniex.Get_Coins()
-	if err != nil {
-		glog.Errorln(err)
-		http.Error(w, "Internal Server error", http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(coins)
-	if err != nil {
-		glog.Errorln(err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-	}
-
-}
-
-func get_poloniex_coin(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	jsonData, err := poloniex.Get_Coin_Stats(strings.ToUpper(params["id"]))
-	if err != nil {
-		glog.Errorln(err)
-		if strings.HasPrefix(err.Error(), "invalid coinId id:") {
-			http.Error(w, error.Error(err), http.StatusBadRequest)
-			return
-		} else {
-			http.Error(w, "server error", http.StatusInternalServerError)
-			return
-		}
-	}
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(jsonData)
-	if err != nil {
-		glog.Errorln(err)
-		http.Error(w, "server error", http.StatusInternalServerError)
-		return
-	}
-}
-
-
-func get_bitstamp_coins(w http.ResponseWriter, r *http.Request) {
-	coins, err := bitstamp.Get_Coins()
-	if err != nil {
-		glog.Errorln(err)
-		http.Error(w, "Internal Server error", http.StatusInternalServerError)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(coins)
-	if err != nil {
-		glog.Errorln(err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
-	}
-
-}
-
-func get_bitstamp_coin(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	jsonData, err := bitstamp.Get_Coin_Stats(strings.ToUpper(params["id"]))
-	if err != nil {
-		glog.Errorln(err)
-		if strings.HasPrefix(err.Error(), "invalid coinId id:") {
-			http.Error(w, error.Error(err), http.StatusBadRequest)
-			return
-		} else {
-			http.Error(w, "server error", http.StatusInternalServerError)
-			return
-		}
-	}
-	w.Header().Set("Content-Type", "application/json")
-	err = json.NewEncoder(w).Encode(jsonData)
-	if err != nil {
-		glog.Errorln(err)
-		http.Error(w, "server error", http.StatusInternalServerError)
-		return
-	}
-}
 
 func GetCoin(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
