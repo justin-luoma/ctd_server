@@ -1,9 +1,9 @@
 package main
 
 import (
-	"coin_struct"
 	"decimal_math"
 	json2 "encoding/json"
+	"errors"
 	"exchange_api_status"
 	"flag"
 	"fmt"
@@ -34,6 +34,37 @@ func init() {
 
 func TestInit() {
 	fmt.Println("poloniex test init")
+}
+
+func is_valid_coin(coinId string) bool {
+	if _, ok := currencies[coinId]; ok {
+		return true
+	}
+
+	return false
+}
+
+func is_data_old(coinId string, maxAgeSeconds int) bool {
+	var dataOld bool = false
+
+	poloniexDataSet.RLock()
+	defer poloniexDataSet.RUnlock()
+
+	coin := poloniexDataSet.Coin[coinId].(map[string]interface{})
+
+	for market, v := range coin {
+		switch v.(type) {
+		case map[string]interface{}:
+			dataAge := time.Since(
+				time.Unix(coin[market].(map[string]interface{})["QueryTimeStamp"].(int64), 0)).Seconds()
+			if int(dataAge) > maxAgeSeconds {
+				dataOld = true
+				return dataOld
+			}
+		}
+	}
+
+	return dataOld
 }
 
 func api_call_wrapper(url string) (*[]byte, error) {
@@ -148,6 +179,55 @@ func get_ticker() (map[string]interface{}, error) {
 	return tickerData, nil
 }
 
+func build_json_data(coinId string) *map[string]interface{} {
+	poloniexDataSet.RLock()
+	defer poloniexDataSet.RUnlock()
+
+	poloniexData := poloniexDataSet.Coin[coinId].(map[string]interface{})
+
+	jsonData := map[string]interface{}{
+		"id": coinId,
+		"display_name": poloniexData["DisplayName"],
+	}
+
+	/*
+	structure of poloniexData is
+	{
+	DisplayName: "Bitcoin",
+		"marketCoin(ETH)": map[string]interface{}{
+			Price: 1,
+			Delta: 1,
+			QueryTimeStamp: 1231231,
+		},
+	}
+	in bittrexData range could be DisplayName: "Bitcoin" type map[string]string or
+		"marketCoin(ETH)": map[string]interface{}{
+			Price: 1,
+			Delta: 1,
+			QueryTimeStamp: 1231231,
+		} type map[string]interface{}
+	we only want it if it's type map[string]interface{}
+	 */
+	 for market, v := range poloniexData {
+		 switch v.(type) {
+		 case map[string]interface{}:
+
+		 	marketData := poloniexData[market].(map[string]interface{})
+		 	marketTmp := map[string]interface{}{
+		 		strings.ToLower(market) + "_price": marketData["Price"],
+		 		strings.ToLower(market) + "_24_hour_change": marketData["Delta"],
+		 		strings.ToLower(market) + "_query_timestamp": marketData["QueryTimeStamp"],
+			}
+
+			for k, v := range marketTmp {
+				jsonData[k] = v
+			}
+		 }
+	 }
+
+	 return &jsonData
+}
+
 func build_data_set() {
 	poloniexDataSet.Lock()
 	defer poloniexDataSet.Unlock()
@@ -256,9 +336,17 @@ func Get_Coins() ([]coin_struct.Coin, error) {
 
 }*/
 
-//TODO write Get_Coin_Stats function
-/*
 func Get_Coin_Stats(coinId string) (*map[string]interface{}, error) {
+	coinId = strings.ToUpper(coinId)
+	if !is_valid_coin(coinId) {
+		err := errors.New("invalid coinId id: " + coinId)
+		return nil, err
+	}
+	if is_data_old(coinId, 10) {
+		build_data_set()
+	}
 
+	jsonData := build_json_data(coinId)
+
+	return jsonData, nil
 }
- */

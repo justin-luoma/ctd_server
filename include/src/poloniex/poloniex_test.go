@@ -2,8 +2,9 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"testing"
-
+	json2 "encoding/json"
 )
 
 func init() {
@@ -43,5 +44,26 @@ func TestGetCurrencies(t *testing.T) {
 }*/
 
 func TestPoloniex(t *testing.T)  {
-	TestInit()
+	//TestInit()
+	fmt.Printf("%s: %t\n", "BTC", is_valid_coin("BTC"))
+	fmt.Printf("%s: %t\n", "LTC", is_valid_coin("LTC"))
+	fmt.Printf("%s: %t\n", "ETH", is_valid_coin("ETH"))
+	fmt.Printf("%s: %t\n", "VTC", is_valid_coin("VTC"))
+
+	/*for i := 1; i <= 10; i++ {
+		fmt.Printf("%s: %t\n", "Is data old", is_data_old("BTC", 5))
+		time.Sleep(time.Second)
+	}*/
+
+	jsonData, err := Get_Coin_Stats("BTC")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	out, err := json2.MarshalIndent(jsonData, "", " ")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println(string(out))
 }

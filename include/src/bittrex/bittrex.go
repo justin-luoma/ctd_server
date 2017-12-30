@@ -115,6 +115,24 @@ func build_json_data(coinId string) *map[string]interface{} {
 		"display_name":	bittrexData["DisplayName"],
 	}
 
+	/*
+	structure of bittrexData is
+	{
+	DisplayName: "Bitcoin",
+		"marketCoin(ETH)": map[string]interface{}{
+			Price: 1,
+			Delta: 1,
+			QueryTimeStamp: 1231231,
+		},
+	}
+	in range market could be DisplayName: "Bitcoin" type map[string]string or
+		"marketCoin(ETH)": map[string]interface{}{
+			Price: 1,
+			Delta: 1,
+			QueryTimeStamp: 1231231,
+		} type map[string]interface{}
+	we only want it if it's type map[string]interface{}
+	 */
 	for market, v := range bittrexData {
 		switch v.(type) {
 		case map[string]interface{}:
