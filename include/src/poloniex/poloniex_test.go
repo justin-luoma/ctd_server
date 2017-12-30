@@ -1,4 +1,4 @@
-package main
+package poloniex
 
 import (
 	"flag"
@@ -45,22 +45,42 @@ func TestGetCurrencies(t *testing.T) {
 
 func TestPoloniex(t *testing.T)  {
 	//TestInit()
-	fmt.Printf("%s: %t\n", "BTC", is_valid_coin("BTC"))
+	/*fmt.Printf("%s: %t\n", "BTC", is_valid_coin("BTC"))
 	fmt.Printf("%s: %t\n", "LTC", is_valid_coin("LTC"))
 	fmt.Printf("%s: %t\n", "ETH", is_valid_coin("ETH"))
-	fmt.Printf("%s: %t\n", "VTC", is_valid_coin("VTC"))
+	fmt.Printf("%s: %t\n", "VTC", is_valid_coin("VTC"))*/
 
 	/*for i := 1; i <= 10; i++ {
 		fmt.Printf("%s: %t\n", "Is data old", is_data_old("BTC", 5))
 		time.Sleep(time.Second)
 	}*/
 
-	jsonData, err := Get_Coin_Stats("BTC")
+	/*jsonData, err := Get_Coin_Stats("BTC")
 	if err != nil {
 		fmt.Println(err)
 	}
 
 	out, err := json2.MarshalIndent(jsonData, "", " ")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	fmt.Println(string(out))*/
+	/*poloniexCurrencies, err := get_currencies()
+	if err != nil {
+		glog.Errorln(err)
+		//return nil, err
+	}
+	for _, data := range poloniexCurrencies {
+		data := data.(map[string]interface{})
+		fmt.Printf("%T", data["name"])
+	}*/
+	coins, err := Get_Coins()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	out, err := json2.MarshalIndent(coins, "", " ")
 	if err != nil {
 		fmt.Println(err)
 	}

@@ -1,6 +1,7 @@
-package main
+package poloniex
 
 import (
+	"coin_struct"
 	"decimal_math"
 	json2 "encoding/json"
 	"errors"
@@ -65,6 +66,22 @@ func is_data_old(coinId string, maxAgeSeconds int) bool {
 	}
 
 	return dataOld
+}
+
+func float_to_bool(f float64, inverse bool) (bool) {
+	switch inverse {
+	case true:
+		if f == 0{
+			return false
+		} else {
+			return true
+		}
+	}
+	if f == 1 {
+		return false
+	}
+
+	return true
 }
 
 func api_call_wrapper(url string) (*[]byte, error) {
@@ -323,18 +340,41 @@ func build_data_set() {
 			}
 		}
 	}
-
-	//TESTING
-	//fmt.Println(currencies)
-	/*jsonData, err := json2.MarshalIndent(coin, "", " ")
-	fmt.Println(string(jsonData), err)*/
 }
 
 //TODO write Get_Coins function
-/*
 func Get_Coins() ([]coin_struct.Coin, error) {
+	var coin coin_struct.Coin
+	var coins []coin_struct.Coin
 
-}*/
+	poloniexCurrencies, err := get_currencies()
+	if err != nil {
+		glog.Errorln(err)
+		return nil, err
+	}
+
+	for currency, data := range poloniexCurrencies {
+		data := data.(map[string]interface{})
+		if float_to_bool(data["delisted"].(float64), true) {
+			continue
+		}
+		var frozen = false
+		if float_to_bool(data["frozen"].(float64), true) {
+			frozen = true
+		}
+		var active = true
+		if float_to_bool(data["disabled"].(float64), true) {
+			active = false
+		}
+		coin.ID = currency
+		coin.DisplayName = data["name"].(string)
+		coin.IsFrozen = frozen
+		coin.IsActive = active
+		coins = append(coins, coin)
+	}
+
+	return coins, nil
+}
 
 func Get_Coin_Stats(coinId string) (*map[string]interface{}, error) {
 	coinId = strings.ToUpper(coinId)

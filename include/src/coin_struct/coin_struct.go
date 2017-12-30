@@ -16,4 +16,5 @@ type Coin struct {
 	QueryTimeStamp   int64   `json:"query_timestamp,omitempty"`
 	IsActive         bool    `json:"is_active"`
 	StatusMessage    string  `json:"status_message,omitempty"`
+	IsFrozen         bool    `json:"is_frozen"`
 }
