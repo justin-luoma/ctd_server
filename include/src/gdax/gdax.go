@@ -3,7 +3,6 @@ package gdax
 import (
 	"coin_struct"
 	"decimal_math"
-	"exchange_api_status"
 	"errors"
 	"flag"
 	"github.com/golang/glog"
@@ -13,8 +12,6 @@ import (
 )
 
 const apiUrl = "https://api.gdax.com/"
-
-
 
 //var GdaxCurrencies []coin_struct.Coin
 
@@ -26,6 +23,8 @@ var gdaxDataSet = struct {
 }{Coin: make(map[string]interface{})}
 
 var gC = init_currencies()
+
+var gP = init_products()
 
 func init() {
 	flag.Parse()
@@ -49,11 +48,6 @@ func is_valid_coin(coinId string) bool {
 	}
 
 	return false
-	/*if _, ok := currencyTypes[coinId]; ok && currencyTypes[coinId] == "crypto" {
-		return true
-	} else {
-		return false
-	}*/
 }
 
 func valid_product_stats(baseCurrency string, quoteCurrency string) bool {
@@ -131,28 +125,16 @@ func build_json_struct(coinId string) *map[string]interface{} {
 	return &jsonData
 }
 
-//noinspection ALL
 func build_gdax_dataset() {
-	uP, _, err := get_online_products()
-	if err != nil && uP == nil {
-		glog.Errorln("Unable to initialize GDAX package, check error log")
-		exchange_api_status.Update_Status("gdax", 0)
-		return
-	} else {
-		exchange_api_status.Update_Status("gdax", 1)
+	currencies := gC.get_coins()
 
-		currencies := gC.get_currencies()
-
-		for _, currency := range *currencies {
-			if _, ok := currencyTypes[currency.ID]; !ok {
-				update_coin_data(currency.ID, currency.DisplayName, &uP)
-			}
-		}
+	for _, currency := range *currencies {
+		update_coin_data(currency.ID, currency.DisplayName)
 	}
 }
 
 //noinspection ALL
-func update_coin_data(coinId string, coinName string, onlineProducts *[]GdaxProducts) {
+func update_coin_data(coinId string, coinName string) {
 	glog.V(2).Infoln("update_coin_data " + coinId)
 
 	if is_valid_coin(coinId) {
@@ -162,7 +144,7 @@ func update_coin_data(coinId string, coinName string, onlineProducts *[]GdaxProd
 
 		coin := gdaxDataSet.Coin
 
-		for _, product := range *onlineProducts {
+		for _, product := range gP.Products {
 			//only want products with the specified coin: coinId=BTC productId=BTC-USD/BTC-EUR
 			if strings.HasPrefix(product.Id, coinId) {
 
@@ -215,34 +197,8 @@ func update_coin_data(coinId string, coinName string, onlineProducts *[]GdaxProd
 	}
 }
 
-//noinspection ALL
-func Get_Coins() (*[]coin_struct.Coin) {
+func Get_Coins() *[]coin_struct.Coin {
 	return gC.get_coins()
-	/*var coin coin_struct.Coin
-	var coins []coin_struct.Coin
-
-	var err error
-
-	for c, t := range currencyTypes {
-		var currency, err = get_currency(c)
-		if err != nil {
-			glog.Error(err)
-			glog.Error("invalid response for GDAX currency: " + c)
-		} else if t == "crypto" {
-			coin.ID = currency.Id
-			coin.DisplayName = currency.Name
-			if currency.Status == "online" {
-				coin.IsActive = true
-			} else {
-				coin.IsActive = false
-			}
-			coins = append(coins, coin)
-		} else {
-			continue
-		}
-	}
-
-	return coins, err*/
 }
 
 //TODO remove get_online_products call, change to pulling cached data
@@ -253,23 +209,8 @@ func Get_Coin_Stats(coinId string) (*map[string]interface{}, error) {
 	}
 
 	if is_data_old(coinId, 10) {
-		uP, _, err := get_online_products()
-		if err != nil || uP == nil {
-			glog.Errorln("GDAX package offline, check error log")
-			exchange_api_status.Update_Status("gdax", 0)
-			return nil, errors.New("GDAX API is down")
-		} else {
-			exchange_api_status.Update_Status("gdax", 1)
-
-			/*currencies, err := get_currencies_api()
-			if err != nil {
-				glog.Errorln("Unable to get GDAX currencies")
-				exchange_api_status.Update_Status("gdax", 0)
-				return nil, errors.New("GDAX API is down")
-			}*/
-			currency, _ := gC.get_currency(coinId)
-			update_coin_data(coinId, currency.DisplayName, &uP)
-		}
+		currency, _ := gC.get_currency(coinId)
+		update_coin_data(coinId, currency.DisplayName)
 	}
 
 	jsonData := build_json_struct(coinId)

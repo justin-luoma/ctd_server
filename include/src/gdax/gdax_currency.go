@@ -11,7 +11,7 @@ import (
 	"github.com/golang/glog"
 )
 
-const dataOldDuration = 10 * time.Minute
+const currencyDataOldDuration = 10 * time.Minute
 
 var currencyTypes = map[string]string{
 	"JPY": "fiat",
@@ -21,7 +21,7 @@ var currencyTypes = map[string]string{
 	"GBP": "fiat",
 }
 
-type gdaxCurrencyStruct struct {
+type gdaxCurrencyApi struct {
 	Id      string `json:"id,omitempty"`
 	Name    string `json:"name,omitempty"`
 	MinSize string `json:"min_size,omitempty"`
@@ -30,14 +30,14 @@ type gdaxCurrencyStruct struct {
 }
 
 //noinspection ALL
-func get_currency(id string) (*gdaxCurrencyStruct, error) {
+func get_currency(id string) (*gdaxCurrencyApi, error) {
 	bodyBytes, err := restful_query.Get(apiUrl + "currencies/" + id)
 	if err != nil {
 		glog.Errorln(err)
 		return nil, err
 	}
 
-	currency := gdaxCurrencyStruct{}
+	currency := gdaxCurrencyApi{}
 	if err := json2.Unmarshal(bodyBytes, &currency); err != nil {
 		return &currency, err
 	}
@@ -45,24 +45,19 @@ func get_currency(id string) (*gdaxCurrencyStruct, error) {
 	return &currency, nil
 }
 
-func get_currencies_api() (*[]gdaxCurrencyStruct, error) {
+func get_currencies_api() (*[]gdaxCurrencyApi, error) {
 	bodyBytes, err := restful_query.Get(apiUrl + "currencies")
 	if err != nil {
 		glog.Errorln(err)
 		return nil, err
 	}
 
-	var currencies []gdaxCurrencyStruct
+	var currencies []gdaxCurrencyApi
 	if err := json2.Unmarshal(bodyBytes, &currencies); err != nil {
 		return &currencies, err
 	}
 
 	return &currencies, nil
-}
-
-type gdaxCurrencies struct {
-	Currencies     []coin_struct.Coin
-	queryTimestamp int64
 }
 
 func update_coins() *[]coin_struct.Coin {
@@ -110,6 +105,11 @@ func update_coins() *[]coin_struct.Coin {
 	return &tCoins
 }
 
+type gdaxCurrencies struct {
+	Currencies     []coin_struct.Coin
+	queryTimestamp int64
+}
+
 func init_currencies() *gdaxCurrencies {
 	var gC = gdaxCurrencies{
 		queryTimestamp: time.Now().Unix(),
@@ -126,12 +126,14 @@ func (gC *gdaxCurrencies) Test() *[]coin_struct.Coin {
 
 func (gC *gdaxCurrencies) update_data(force bool) {
 	if force {
+		gC.queryTimestamp = time.Now().Unix()
 		gC.Currencies = *update_coins()
 
 		return
 	} else {
 		dataAge := time.Since(time.Unix(gC.queryTimestamp, 0))
-		if dataAge > dataOldDuration {
+		if dataAge > currencyDataOldDuration {
+			gC.queryTimestamp = time.Now().Unix()
 			gC.Currencies = *update_coins()
 		}
 	}

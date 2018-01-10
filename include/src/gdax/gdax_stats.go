@@ -1,10 +1,10 @@
 package gdax
 
 import (
-	"restful_query"
 	json2 "encoding/json"
 	"errors"
 	"github.com/golang/glog"
+	"restful_query"
 	"strconv"
 	"time"
 )

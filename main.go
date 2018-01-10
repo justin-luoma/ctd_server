@@ -1,20 +1,20 @@
 package main
 
 import (
+	"bitstamp"
+	"bittrex"
 	"coin_struct"
 	"coincap"
-	"exchange_api_status"
-	"gdax"
 	"encoding/json"
+	"exchange_api_status"
 	"flag"
+	"gdax"
 	"github.com/golang/glog"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
-	"strings"
-	"bittrex"
 	"poloniex"
-	"bitstamp"
+	"strings"
 )
 
 func init() {
@@ -61,8 +61,8 @@ func main() {
 
 	router.StrictSlash(true)
 	/*router.HandleFunc("/{exchange}/coins", get_exchange_coins).
-		Methods("GET").
-		Queries("id", "{id}")*/
+	Methods("GET").
+	Queries("id", "{id}")*/
 	router.HandleFunc("/{exchange}/coins", get_exchange_coins).
 		Methods("GET")
 
@@ -70,7 +70,6 @@ func main() {
 		Methods("GET")
 
 	log.Fatal(http.ListenAndServe(":8000", router))
-
 
 }
 
@@ -108,16 +107,12 @@ func DeletePerson(w http.ResponseWriter, r *http.Request) {
 	}
 }*/
 
-var count = 0
-
 func get_exchange_coins(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var coins []coin_struct.Coin
 	var err error
-	switch params["exchange"]{
+	switch params["exchange"] {
 	case "gdax":
-		count ++
-		glog.Infoln(count)
 		coins = *gdax.Get_Coins()
 	case "poloniex":
 		coins, err = poloniex.Get_Coins()
@@ -147,10 +142,8 @@ func get_exchange_coin(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var jsonData *map[string]interface{}
 	var err error
-	switch params["exchange"]{
+	switch params["exchange"] {
 	case "gdax":
-		count ++
-		glog.Infoln(count)
 		jsonData, err = gdax.Get_Coin_Stats(strings.ToUpper(params["id"]))
 	case "poloniex":
 		jsonData, err = poloniex.Get_Coin_Stats(strings.ToUpper(params["id"]))
@@ -177,7 +170,6 @@ func get_exchange_coin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-
 
 func GetCoin(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
