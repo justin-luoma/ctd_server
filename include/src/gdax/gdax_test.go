@@ -2,7 +2,9 @@ package gdax
 
 import (
 	"flag"
+	"fmt"
 	"testing"
+	json2 "encoding/json"
 )
 
 func init() {
@@ -13,6 +15,16 @@ func init() {
 	}
 }
 
+/*
 func TestPullCurrencies(t *testing.T) {
 	get_stats()
+}
+*/
+
+func TestCurrencies(t *testing.T) {
+	gC := init_currencies()
+	coins := gC.Test()
+
+	jsonData, _ := json2.MarshalIndent(*coins, "", " ")
+	fmt.Println(string(jsonData))
 }

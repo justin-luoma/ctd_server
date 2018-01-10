@@ -14,15 +14,9 @@ import (
 
 const apiUrl = "https://api.gdax.com/"
 
-var currencyTypes = map[string]string{
-	"BTC": "crypto",
-	"BCH": "crypto",
-	"ETH": "crypto",
-	"LTC": "crypto",
-	"USD": "fiat",
-	"EUR": "fiat",
-	"GBP": "fiat",
-}
+
+
+//var GdaxCurrencies []coin_struct.Coin
 
 var onlineProductIds []string
 
@@ -30,6 +24,8 @@ var gdaxDataSet = struct {
 	sync.RWMutex
 	Coin map[string]interface{}
 }{Coin: make(map[string]interface{})}
+
+var gC = init_currencies()
 
 func init() {
 	flag.Parse()
@@ -46,11 +42,18 @@ func check_online_status() bool {
 }
 
 func is_valid_coin(coinId string) bool {
-	if _, ok := currencyTypes[coinId]; ok && currencyTypes[coinId] == "crypto" {
+	for _, coin := range *gC.get_coins() {
+		if coinId == coin.ID {
+			return true
+		}
+	}
+
+	return false
+	/*if _, ok := currencyTypes[coinId]; ok && currencyTypes[coinId] == "crypto" {
 		return true
 	} else {
 		return false
-	}
+	}*/
 }
 
 func valid_product_stats(baseCurrency string, quoteCurrency string) bool {
@@ -138,31 +141,18 @@ func build_gdax_dataset() {
 	} else {
 		exchange_api_status.Update_Status("gdax", 1)
 
-		currencies, err := get_currencies()
-		if err != nil {
-			glog.Errorln("Unable to get GDAX currencies")
-			exchange_api_status.Update_Status("gdax", 0)
-			return
-		}
+		currencies := gC.get_currencies()
 
 		for _, currency := range *currencies {
-			//we only want to
-			if currency.Status == "online" && currencyTypes[currency.Id] == "crypto" {
-				update_coin_data(currency.Id, currencies, &uP)
+			if _, ok := currencyTypes[currency.ID]; !ok {
+				update_coin_data(currency.ID, currency.DisplayName, &uP)
 			}
 		}
-
-		//TEST SECTION//
-		//_ = build_json_struct("BTC")
-		/*gdaxDataSet.RLock()
-		jsonData, _ := json2.MarshalIndent(gdaxDataSet.Coin, "", " ")
-		gdaxDataSet.RUnlock()
-		fmt.Println(string(jsonData))*/
 	}
 }
 
 //noinspection ALL
-func update_coin_data(coinId string, currencies *[]GdaxCurrencies, onlineProducts *[]GdaxProducts) {
+func update_coin_data(coinId string, coinName string, onlineProducts *[]GdaxProducts) {
 	glog.V(2).Infoln("update_coin_data " + coinId)
 
 	if is_valid_coin(coinId) {
@@ -171,12 +161,6 @@ func update_coin_data(coinId string, currencies *[]GdaxCurrencies, onlineProduct
 		defer gdaxDataSet.Unlock()
 
 		coin := gdaxDataSet.Coin
-
-		currencyNames := make(map[string]string)
-
-		for _, currency := range *currencies {
-			currencyNames[currency.Id] = currency.Name
-		}
 
 		for _, product := range *onlineProducts {
 			//only want products with the specified coin: coinId=BTC productId=BTC-USD/BTC-EUR
@@ -200,7 +184,7 @@ func update_coin_data(coinId string, currencies *[]GdaxCurrencies, onlineProduct
 					}
 				*/
 				coinData := map[string]interface{}{
-					"DisplayName": currencyNames[coinId],
+					"DisplayName": coinName,
 					product.QuoteCurrency: map[string]interface{}{
 						"Price":          stats.Last,
 						"Delta":          delta,
@@ -232,8 +216,9 @@ func update_coin_data(coinId string, currencies *[]GdaxCurrencies, onlineProduct
 }
 
 //noinspection ALL
-func Get_Coins() ([]coin_struct.Coin, error) {
-	var coin coin_struct.Coin
+func Get_Coins() (*[]coin_struct.Coin) {
+	return gC.get_coins()
+	/*var coin coin_struct.Coin
 	var coins []coin_struct.Coin
 
 	var err error
@@ -257,10 +242,10 @@ func Get_Coins() ([]coin_struct.Coin, error) {
 		}
 	}
 
-	return coins, err
+	return coins, err*/
 }
 
-//noinspection ALL
+//TODO remove get_online_products call, change to pulling cached data
 func Get_Coin_Stats(coinId string) (*map[string]interface{}, error) {
 	if !is_valid_coin(coinId) {
 		err := errors.New("invalid coinId id: " + coinId)
@@ -276,13 +261,14 @@ func Get_Coin_Stats(coinId string) (*map[string]interface{}, error) {
 		} else {
 			exchange_api_status.Update_Status("gdax", 1)
 
-			currencies, err := get_currencies()
+			/*currencies, err := get_currencies_api()
 			if err != nil {
 				glog.Errorln("Unable to get GDAX currencies")
 				exchange_api_status.Update_Status("gdax", 0)
 				return nil, errors.New("GDAX API is down")
-			}
-			update_coin_data(coinId, currencies, &uP)
+			}*/
+			currency, _ := gC.get_currency(coinId)
+			update_coin_data(coinId, currency.DisplayName, &uP)
 		}
 	}
 

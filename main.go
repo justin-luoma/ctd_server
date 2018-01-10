@@ -56,12 +56,22 @@ func main() {
 	router.HandleFunc("/people/{id}", GetPerson).Methods("GET")
 	router.HandleFunc("/people/{id}", CreatePerson).Methods("POST")
 	router.HandleFunc("/people/{id}", DeletePerson).Methods("DELETE")*/
-	router.HandleFunc("/coin/{id}", GetCoin).Methods("GET")
+	router.HandleFunc("/coin/{id}", GetCoin).
+		Methods("GET")
 
-	router.HandleFunc("/{exchange}/coins", get_exchange_coins).Methods("GET")
-	router.HandleFunc("/{exchange}/coin/{id}", get_exchange_coin).Methods("GET")
+	router.StrictSlash(true)
+	/*router.HandleFunc("/{exchange}/coins", get_exchange_coins).
+		Methods("GET").
+		Queries("id", "{id}")*/
+	router.HandleFunc("/{exchange}/coins", get_exchange_coins).
+		Methods("GET")
+
+	router.HandleFunc("/{exchange}/coin/{id}", get_exchange_coin).
+		Methods("GET")
 
 	log.Fatal(http.ListenAndServe(":8000", router))
+
+
 }
 
 /*
@@ -98,19 +108,26 @@ func DeletePerson(w http.ResponseWriter, r *http.Request) {
 	}
 }*/
 
+var count = 0
+
 func get_exchange_coins(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	var coins []coin_struct.Coin
 	var err error
 	switch params["exchange"]{
 	case "gdax":
-		coins, err = gdax.Get_Coins()
+		count ++
+		glog.Infoln(count)
+		coins = *gdax.Get_Coins()
 	case "poloniex":
 		coins, err = poloniex.Get_Coins()
 	case "bittrex":
 		coins, err = bittrex.Get_Coins()
 	case "bitstamp":
 		coins, err = bitstamp.Get_Coins()
+	default:
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
 	}
 
 	if err != nil {
@@ -132,6 +149,8 @@ func get_exchange_coin(w http.ResponseWriter, r *http.Request) {
 	var err error
 	switch params["exchange"]{
 	case "gdax":
+		count ++
+		glog.Infoln(count)
 		jsonData, err = gdax.Get_Coin_Stats(strings.ToUpper(params["id"]))
 	case "poloniex":
 		jsonData, err = poloniex.Get_Coin_Stats(strings.ToUpper(params["id"]))

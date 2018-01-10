@@ -27,7 +27,7 @@ func Get(url string) ([]byte, error) {
 	}
 	if resp.Header.StatusCode() != 200 {
 		if resp.Header.StatusCode() == 429 {
-			glog.Warningln("api limit exceeded, trying again")
+			glog.Warningln("api limit exceeded, trying again: " + url)
 			time.Sleep(time.Second)
 			return Get(url)
 		} else {
