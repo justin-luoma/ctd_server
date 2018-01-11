@@ -21,18 +21,25 @@ func TestPullCurrencies(t *testing.T) {
 }
 */
 
-// func TestCurrencies(t *testing.T) {
-// 	gC := init_currencies()
-// 	coins := gC.Test()
+func TestCurrencies(t *testing.T) {
+	coins := gC.Test()
 
-// 	jsonData, _ := json2.MarshalIndent(*coins, "", " ")
-// 	fmt.Println(string(jsonData))
-// }
+	jsonData, _ := json2.MarshalIndent(*coins, "", " ")
+	fmt.Println(string(jsonData))
+}
 
 func TestProducts(t *testing.T) {
-	gP := init_products()
+	//gP := init_products()
 	products := gP.Test()
 
 	jsonData, _ := json2.MarshalIndent(*products, "", " ")
+	fmt.Println(string(jsonData))
+}
+
+func TestStats(t *testing.T) {
+
+	stats := gS.Test()
+
+	jsonData, _ := json2.MarshalIndent(*stats, "", " ")
 	fmt.Println(string(jsonData))
 }

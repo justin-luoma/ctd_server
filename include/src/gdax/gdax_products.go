@@ -65,8 +65,20 @@ type gdaxProduct struct {
 	StatusMessage string `json:"status_message,omitempty"`
 }
 
-func update_products() *[]gdaxProduct {
+type gdaxProducts struct {
+	Products       []gdaxProduct
+	queryTimestamp int64
+}
 
+func init_products() *gdaxProducts {
+	var gP = gdaxProducts{}
+	gP.update_products()
+
+	return &gP
+}
+
+func (gP *gdaxProducts) update_products() {
+	var timestamp = time.Now().Unix()
 	var tmpProduct gdaxProduct
 	var tmpProducts []gdaxProduct
 
@@ -75,7 +87,7 @@ func update_products() *[]gdaxProduct {
 		tmpProducts = []gdaxProduct{}
 
 		exchange_api_status.Update_Status("gdax", 0)
-		return &tmpProducts
+		return
 	}
 
 	for _, apiProduct := range *apiProducts {
@@ -105,21 +117,10 @@ func update_products() *[]gdaxProduct {
 
 	exchange_api_status.Update_Status("gdax", 1)
 
-	return &tmpProducts
-}
-
-type gdaxProducts struct {
-	Products       []gdaxProduct
-	queryTimestamp int64
-}
-
-func init_products() *gdaxProducts {
-	var gP = gdaxProducts{
-		queryTimestamp: time.Now().Unix(),
+	*gP = gdaxProducts{
+		Products:       tmpProducts,
+		queryTimestamp: timestamp,
 	}
-	gP.Products = *update_products()
-
-	return &gP
 }
 
 func (gP *gdaxProducts) Test() *[]gdaxProduct {
@@ -128,14 +129,12 @@ func (gP *gdaxProducts) Test() *[]gdaxProduct {
 
 func (gP *gdaxProducts) update_data(force bool) {
 	if force {
-		gP.queryTimestamp = time.Now().Unix()
-		gP.Products = *update_products()
+		gP.update_products()
 
 		return
 	} else {
 		if dataAge := time.Since(time.Unix(gP.queryTimestamp, 0)); dataAge > productDataOldDuration {
-			gP.queryTimestamp = time.Now().Unix()
-			gP.Products = *update_products()
+			gP.update_products()
 		}
 	}
 }

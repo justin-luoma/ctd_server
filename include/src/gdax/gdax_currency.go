@@ -60,8 +60,20 @@ func get_currencies_api() (*[]gdaxCurrencyApi, error) {
 	return &currencies, nil
 }
 
-func update_coins() *[]coin_struct.Coin {
+type gdaxCurrencies struct {
+	Currencies     []coin_struct.Coin
+	queryTimestamp int64
+}
 
+func init_currencies() *gdaxCurrencies {
+	var gC = gdaxCurrencies{}
+	gC.update_coins()
+
+	return &gC
+}
+
+func (gC *gdaxCurrencies) update_coins() {
+	var timestamp = time.Now().Unix()
 	var tCoin coin_struct.Coin
 	var tCoins []coin_struct.Coin
 
@@ -70,7 +82,7 @@ func update_coins() *[]coin_struct.Coin {
 		tCoins = []coin_struct.Coin{}
 
 		exchange_api_status.Update_Status("gdax", 0)
-		return &tCoins
+		return
 	}
 
 	for _, currency := range *currencies {
@@ -102,21 +114,10 @@ func update_coins() *[]coin_struct.Coin {
 
 	exchange_api_status.Update_Status("gdax", 1)
 
-	return &tCoins
-}
-
-type gdaxCurrencies struct {
-	Currencies     []coin_struct.Coin
-	queryTimestamp int64
-}
-
-func init_currencies() *gdaxCurrencies {
-	var gC = gdaxCurrencies{
-		queryTimestamp: time.Now().Unix(),
+	*gC = gdaxCurrencies{
+		Currencies:     tCoins,
+		queryTimestamp: timestamp,
 	}
-	gC.Currencies = *update_coins()
-
-	return &gC
 }
 
 func (gC *gdaxCurrencies) Test() *[]coin_struct.Coin {
@@ -126,15 +127,13 @@ func (gC *gdaxCurrencies) Test() *[]coin_struct.Coin {
 
 func (gC *gdaxCurrencies) update_data(force bool) {
 	if force {
-		gC.queryTimestamp = time.Now().Unix()
-		gC.Currencies = *update_coins()
+		gC.update_coins()
 
 		return
 	} else {
 		dataAge := time.Since(time.Unix(gC.queryTimestamp, 0))
 		if dataAge > currencyDataOldDuration {
-			gC.queryTimestamp = time.Now().Unix()
-			gC.Currencies = *update_coins()
+			gC.update_coins()
 		}
 	}
 }
