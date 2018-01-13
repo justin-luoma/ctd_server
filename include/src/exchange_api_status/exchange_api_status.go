@@ -1,9 +1,10 @@
 package exchange_api_status
 
 import (
-	"github.com/golang/glog"
 	"sync"
 	"time"
+
+	"github.com/golang/glog"
 )
 
 //TODO create function to make calls to each exchange to ensure they are online when not having checked in a while
@@ -34,7 +35,7 @@ type Status struct {
 }
 */
 
-func init() {
+func Init() {
 	statusLock.Lock()
 	defer statusLock.Unlock()
 	for _, exchange := range exchanges {

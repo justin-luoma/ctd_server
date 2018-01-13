@@ -4,11 +4,11 @@ import (
 	"coin_struct"
 	"decimal_math"
 	"errors"
-	"flag"
-	"github.com/golang/glog"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/golang/glog"
 )
 
 const apiUrl = "https://api.gdax.com/"
@@ -22,25 +22,27 @@ var gdaxDataSet = struct {
 	Coin map[string]interface{}
 }{Coin: make(map[string]interface{})}
 
-var gC = init_currencies()
+var gC *gdaxCurrencies
 
-var gP = init_products()
+var gP *gdaxProducts
 
-var gS = init_stats()
+var gS *gdaxStats
 
-func init() {
-	flag.Parse()
+func Init() {
+	gC = init_currencies()
+	gP = init_products()
+	gS = init_stats()
 	build_gdax_dataset()
 }
 
-func check_online_status() bool {
-	_, _, err := get_online_products()
-	if err != nil {
-		return false
-	}
+// func check_online_status() bool {
+// 	_, _, err := get_online_products()
+// 	if err != nil {
+// 		return false
+// 	}
 
-	return true
-}
+// 	return true
+// }
 
 func is_valid_coin(coinId string) bool {
 	for _, coin := range *gC.get_coins() {
@@ -70,12 +72,12 @@ func is_data_old(coinId string, maxAgeSeconds int) bool {
 	defer gdaxDataSet.RUnlock()
 	coin := gdaxDataSet.Coin[coinId].(map[string]interface{})
 
-	for quote := range currencyTypes {
-		if !valid_product_stats(coinId, quote) {
+	for _, quote := range *gC.get_currencies() {
+		if !valid_product_stats(coinId, quote.ID) {
 			continue
 		}
 		dataAge := time.Since(
-			time.Unix(coin[quote].(map[string]interface{})["QueryTimestamp"].(int64), 0)).Seconds()
+			time.Unix(coin[quote.ID].(map[string]interface{})["QueryTimestamp"].(int64), 0)).Seconds()
 		if int(dataAge) > maxAgeSeconds {
 			dataOld = true
 			return dataOld
@@ -101,19 +103,19 @@ func build_json_struct(coinId string) *map[string]interface{} {
 		"id":           coinId,
 		"display_name": gdaxData["DisplayName"],
 	}
-	for quote := range currencyTypes {
-		if !valid_product_stats(coinId, quote) {
+	for _, quote := range *gC.get_currencies() {
+		if !valid_product_stats(coinId, quote.ID) {
 			continue
 		}
 		/*
 			quoteData hold the data for the current quote currency in the loop,
 			while quoteTmp is hold the structure for the json formatted data
 		*/
-		quoteData := gdaxData[quote].(map[string]interface{})
+		quoteData := gdaxData[quote.ID].(map[string]interface{})
 		quoteTmp := map[string]interface{}{
-			strings.ToLower(quote) + "_price":           quoteData["Price"],
-			strings.ToLower(quote) + "_24_hour_change":  quoteData["Delta"],
-			strings.ToLower(quote) + "_query_timestamp": quoteData["QueryTimestamp"],
+			strings.ToLower(quote.ID) + "_price":           quoteData["Price"],
+			strings.ToLower(quote.ID) + "_24_hour_change":  quoteData["Delta"],
+			strings.ToLower(quote.ID) + "_query_timestamp": quoteData["QueryTimestamp"],
 		}
 
 		for k, v := range quoteTmp {
@@ -135,7 +137,6 @@ func build_gdax_dataset() {
 	}
 }
 
-//noinspection ALL
 func update_coin_data(coinId string, coinName string) {
 	glog.V(2).Infoln("update_coin_data " + coinId)
 
@@ -150,8 +151,8 @@ func update_coin_data(coinId string, coinName string) {
 			//only want products with the specified coin: coinId=BTC productId=BTC-USD/BTC-EUR
 			if strings.HasPrefix(product.Id, coinId) {
 
-				stats, err := get_product_stats(product.Id)
-				if err != nil {
+				stats := gS.get_product_stats(product.Id)
+				if stats == nil {
 					glog.Warningln("Failed to retriece stats for product: " + product.Id)
 					continue
 				}
@@ -203,19 +204,24 @@ func Get_Coins() *[]coin_struct.Coin {
 	return gC.get_coins()
 }
 
-//TODO remove get_online_products call, change to pulling cached data
 func Get_Coin_Stats(coinId string) (*map[string]interface{}, error) {
 	if !is_valid_coin(coinId) {
 		err := errors.New("invalid coinId id: " + coinId)
 		return nil, err
 	}
 
-	if is_data_old(coinId, 10) {
+	/*if is_data_old(coinId, 10) {
 		currency, _ := gC.get_currency(coinId)
 		update_coin_data(coinId, currency.DisplayName)
-	}
+	}*/
 
 	jsonData := build_json_struct(coinId)
 
 	return jsonData, nil
+}
+
+func Update_Data(force bool) {
+	gC.update_data(force)
+	gP.update_data(force)
+	gS.update_data(force)
 }

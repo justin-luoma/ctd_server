@@ -2,17 +2,13 @@ package coincap
 
 import (
 	"coin_struct"
-	"restful_query"
 	"encoding/json"
-	"flag"
-	"github.com/jinzhu/copier"
 	"log"
+	"restful_query"
 	"time"
-)
 
-func init() {
-	flag.Parse()
-}
+	"github.com/jinzhu/copier"
+)
 
 var apiUrl string = "https://coincap.io/"
 

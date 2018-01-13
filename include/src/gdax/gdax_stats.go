@@ -162,12 +162,15 @@ func (gS *gdaxStats) update_stats(gP *gdaxProducts) {
 
 func (gS *gdaxStats) update_data(force bool) {
 	if force {
+		glog.Infoln("force update gdax stats called")
 		gS.update_stats(gP)
-
+		build_gdax_dataset()
 		return
 	} else {
 		if dataAge := time.Since(time.Unix(gS.queryTimestamp, 0)); dataAge > statsDataOldDuration {
+			glog.Infoln("gdax stats data old, updating")
 			gS.update_stats(gP)
+			build_gdax_dataset()
 		}
 	}
 }

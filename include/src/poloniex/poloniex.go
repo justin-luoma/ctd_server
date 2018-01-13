@@ -6,7 +6,6 @@ import (
 	json2 "encoding/json"
 	"errors"
 	"exchange_api_status"
-	"flag"
 	"fmt"
 	"restful_query"
 	"strings"
@@ -28,8 +27,7 @@ var poloniexDataSet = struct {
 
 var currencies = make(map[string]string)
 
-func init() {
-	flag.Parse()
+func Init() {
 	build_data_set()
 }
 

@@ -127,12 +127,13 @@ func (gC *gdaxCurrencies) Test() *[]coin_struct.Coin {
 
 func (gC *gdaxCurrencies) update_data(force bool) {
 	if force {
+		glog.Infoln("force update gdax currencies called")
 		gC.update_coins()
-
 		return
 	} else {
 		dataAge := time.Since(time.Unix(gC.queryTimestamp, 0))
 		if dataAge > currencyDataOldDuration {
+			glog.Infoln("gdax currency data old, updating")
 			gC.update_coins()
 		}
 	}

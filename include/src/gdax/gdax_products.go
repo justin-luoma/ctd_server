@@ -129,11 +129,12 @@ func (gP *gdaxProducts) Test() *[]gdaxProduct {
 
 func (gP *gdaxProducts) update_data(force bool) {
 	if force {
+		glog.Infoln("force update gdax products called")
 		gP.update_products()
-
 		return
 	} else {
 		if dataAge := time.Since(time.Unix(gP.queryTimestamp, 0)); dataAge > productDataOldDuration {
+			glog.Infoln("gdax product data old, updating")
 			gP.update_products()
 		}
 	}

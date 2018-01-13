@@ -3,13 +3,13 @@ package bitstamp
 import (
 	"coin_struct"
 	"decimal_math"
-	"exchange_api_status"
 	"errors"
-	"flag"
-	"github.com/golang/glog"
+	"exchange_api_status"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/golang/glog"
 )
 
 const apiUrl = "https://www.bitstamp.net/api/"
@@ -29,8 +29,7 @@ var bitstampDataSet = struct {
 	Coin map[string]interface{}
 }{Coin: make(map[string]interface{})}
 
-func init() {
-	flag.Parse()
+func Init() {
 	build_bitstamp_dataset()
 }
 

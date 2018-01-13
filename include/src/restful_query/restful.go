@@ -2,16 +2,12 @@ package restful_query
 
 import (
 	"errors"
-	"flag"
-	"github.com/golang/glog"
-	"github.com/valyala/fasthttp"
 	"strconv"
 	"time"
-)
 
-func init() {
-	flag.Parse()
-}
+	"github.com/golang/glog"
+	"github.com/valyala/fasthttp"
+)
 
 func Get(url string) ([]byte, error) {
 	req := fasthttp.AcquireRequest()

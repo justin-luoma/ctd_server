@@ -6,7 +6,6 @@ import (
 	json2 "encoding/json"
 	"errors"
 	"exchange_api_status"
-	"flag"
 	"fmt"
 	"strings"
 	"sync"
@@ -36,8 +35,7 @@ var baseCurrencies = map[string]string{
 
 var b = bittrex.New(API_KEY, API_SECRET)
 
-func init() {
-	flag.Parse()
+func Init() {
 	build_data_set()
 }
 
