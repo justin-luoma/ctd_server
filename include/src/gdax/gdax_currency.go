@@ -73,15 +73,16 @@ func init_currencies() *gdaxCurrencies {
 }
 
 func (gC *gdaxCurrencies) update_coins() {
-	var timestamp = time.Now().Unix()
 	var tCoin coin_struct.Coin
 	var tCoins []coin_struct.Coin
+	var timestamp = time.Now().Unix()
 
 	currencies, err := get_currencies_api()
 	if err != nil || len(*currencies) < 1 {
 		tCoins = []coin_struct.Coin{}
 
 		exchange_api_status.Update_Status("gdax", 0)
+
 		return
 	}
 
@@ -140,12 +141,10 @@ func (gC *gdaxCurrencies) update_data(force bool) {
 }
 
 func (gC *gdaxCurrencies) get_coins() *[]coin_struct.Coin {
-	var tmpCoin coin_struct.Coin
 	var tmpCoins []coin_struct.Coin
 	for _, currency := range gC.Currencies {
 		if currency.IsActive && !currency.IsFiat {
-			tmpCoin = currency
-			tmpCoins = append(tmpCoins, tmpCoin)
+			tmpCoins = append(tmpCoins, currency)
 		}
 	}
 
